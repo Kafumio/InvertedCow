@@ -22,6 +22,8 @@ func SetupRouter(
 	//设置静态文件位置
 	r.Static("/static", "/")
 
+	//ping
+	r.GET("/ping", c.Ping)
 	SetupAccountRoutes(r, controller.AccountController)
 
 	return r
