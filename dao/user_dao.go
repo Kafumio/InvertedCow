@@ -2,6 +2,7 @@ package dao
 
 import (
 	"InvertedCow/model/po"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,8 @@ type UserDao interface {
 	GetUserByEmail(db *gorm.DB, email string) (*po.User, error)
 	// GetUserByLoginName 根据用户登录名称获取用户
 	GetUserByLoginName(db *gorm.DB, loginName string) (*po.User, error)
+	// CheckEmail 检测邮箱是否已经存在
+	CheckEmail(db *gorm.DB, email string) (bool, error)
 }
 
 type userDao struct {
@@ -55,4 +58,16 @@ func (u *userDao) GetUserByLoginName(db *gorm.DB, loginName string) (*po.User, e
 	user := &po.User{}
 	err := db.Where("login_name = ?", loginName).First(&user).Error
 	return user, err
+}
+
+func (u *userDao) CheckEmail(db *gorm.DB, email string) (bool, error) {
+	user := &po.User{}
+	err := db.Where("email = ?", email).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return user.ID != 0, nil
 }

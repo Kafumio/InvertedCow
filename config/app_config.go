@@ -6,4 +6,5 @@ type AppConfig struct {
 	Port string `ini:"port"` //端口
 	*MySqlConfig
 	*RedisConfig
+	*EmailConfig
 }
