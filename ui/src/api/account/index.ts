@@ -2,20 +2,40 @@ import request from '@/utils/request';
 import { toFormData } from 'axios';
 
 enum API {
-  LOGIN_URL = '/auth/login',
-  USERINFO_URL = '/auth/get/info',
+  SIGN_IN_URL = '/account/signIn',
+  SIGN_UP_URL = '/account/signUp',
+  SEND_CODE_URL = '/account/code/send',
+  GET_INFO_URL = '/account/get/info',
 }
 
-// 暴露请求函数
-export const reqLogin = (data: any): Promise<any> => {
-  return request.post(API.LOGIN_URL, toFormData(data), {
+// reqSignIn 登录
+export const reqSignIn = (data: any): Promise<any> => {
+  return request.post(API.SIGN_IN_URL, toFormData(data), {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   });
 };
 
-// 获取用户信息
+// reqSignUp 注册
+export const reqSignUp = (data: any): Promise<any> => {
+  return request.post(API.SIGN_UP_URL, toFormData(data), {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// reqSendCode 发送校验邮箱
+export const reqSendCode = (data: any): Promise<any> => {
+  return request.post(API.SEND_CODE_URL, toFormData(data), {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// reqUserInfo 获取用户信息
 export const reqUserInfo = (): Promise<any> => {
-  return request.get(API.USERINFO_URL);
+  return request.get(API.GET_INFO_URL);
 };
