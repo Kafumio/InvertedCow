@@ -21,6 +21,8 @@ type UserDao interface {
 	GetUserByLoginName(db *gorm.DB, loginName string) (*po.User, error)
 	// CheckEmail 检测邮箱是否已经存在
 	CheckEmail(db *gorm.DB, email string) (bool, error)
+	// CheckLoginName 检测loginname是否存在
+	CheckLoginName(db *gorm.DB, loginname string) (bool, error)
 }
 
 type userDao struct {
@@ -70,4 +72,16 @@ func (u *userDao) CheckEmail(db *gorm.DB, email string) (bool, error) {
 		return false, err
 	}
 	return user.ID != 0, nil
+}
+
+func (s *userDao) CheckLoginName(db *gorm.DB, loginname string) (bool, error) {
+	user := &po.User{}
+	err := db.Where("login_name = ?", loginname).First(&user).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
 }

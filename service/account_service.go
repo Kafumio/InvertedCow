@@ -7,6 +7,7 @@ import (
 	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/utils"
+	"github.com/Chain-Zhang/pinyin"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 	"time"
@@ -23,7 +24,7 @@ type AccountService interface {
 	// SendAuthCode 获取邮件的验证码
 	SendAuthCode(email string, kind string) (string, *e.Error)
 	// SignUp 用户注册
-	SignUp(user *po.User) error
+	SignUp(user *po.User, code string) *e.Error
 	// PasswordSignIn 用户登录
 	PasswordSignIn(account string, password string) (string, *e.Error)
 }
@@ -86,7 +87,51 @@ func (a *accountService) SendAuthCode(email string, kind string) (string, *e.Err
 	return code, nil
 }
 
-func (a *accountService) SignUp(user *po.User) error {
+func (a *accountService) SignUp(user *po.User, code string) *e.Error {
+	// 检测是否已注册过
+	f, err := a.userDao.CheckEmail(a.db, user.Email)
+	if f {
+		return e.ErrUserEmailIsExist
+	}
+	// 检测code
+	result := a.redis.Get(SignUpEmailProKey + user.Email)
+	if result.Err() != nil {
+		return e.ErrUserUnknownError
+	}
+	if result.Val() != code {
+		return e.ErrSignUpCodeWrong
+	}
+	// 生成用户名称，唯一
+	loginName, err := pinyin.New(user.Username).Split("").Convert()
+	if err != nil {
+		return e.ErrUserUnknownError
+	}
+	loginName = loginName + utils.GetRandomNumber(3)
+	for i := 0; i < 5; i++ {
+		b, err := a.userDao.CheckLoginName(a.db, user.LoginName)
+		if err != nil {
+			return e.ErrMysql
+		}
+		if b {
+			loginName = loginName + utils.GetRandomNumber(1)
+		} else {
+			break
+		}
+	}
+	user.LoginName = loginName
+	//进行注册操作
+	salt := utils.GetRandomPassword(32)
+	user.Salt = salt
+	newPassword, err := utils.GetPwd(user.Password + salt)
+	if err != nil {
+		return e.ErrPasswordEncodeFailed
+	}
+	user.Password = string(newPassword)
+
+	err = a.userDao.InsertUser(a.db, user)
+	if err != nil {
+		return e.ErrMysql
+	}
 	return nil
 }
 
