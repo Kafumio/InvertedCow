@@ -11,7 +11,6 @@ import (
 	"InvertedCow/controller"
 	"InvertedCow/dao"
 	"InvertedCow/data"
-	"InvertedCow/interceptor"
 	"InvertedCow/router"
 	"InvertedCow/service"
 	"net/http"
@@ -26,8 +25,7 @@ func initApp(appConfig *config.AppConfig) (*http.Server, error) {
 	accountService := service.NewAccountService(appConfig, db, client, userDao)
 	accountController := controller.NewAccountController(accountService)
 	controllerController := controller.NewController(accountController)
-	corsInterceptor := interceptor.NewCorsInterceptor()
-	engine := router.SetupRouter(controllerController, corsInterceptor)
+	engine := router.SetupRouter(controllerController)
 	server := newApp(engine, appConfig)
 	return server, nil
 }

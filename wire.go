@@ -8,7 +8,6 @@ import (
 	"InvertedCow/controller"
 	"InvertedCow/dao"
 	"InvertedCow/data"
-	"InvertedCow/interceptor"
 	"InvertedCow/router"
 	"InvertedCow/service"
 	"github.com/google/wire"
@@ -21,7 +20,6 @@ func initApp(*config.AppConfig) (*http.Server, error) {
 		data.ProviderSet,
 		service.ProviderSet,
 		controller.ProviderSet,
-		interceptor.ProviderSet,
 		router.SetupRouter,
 		newApp),
 	)

@@ -90,6 +90,11 @@ func (a *accountService) SendAuthCode(email string, kind string) (string, *e.Err
 }
 
 func (a *accountService) SignUp(user *po.User, code string) *e.Error {
+	// 设置出生日期默认值
+	t := time.Time{}
+	if user.BirthDay == t {
+		user.BirthDay = time.Now()
+	}
 	// 检测是否已注册过
 	f, err := a.userDao.CheckEmail(a.db, user.Email)
 	if f {

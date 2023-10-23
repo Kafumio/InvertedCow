@@ -11,14 +11,13 @@ import (
 //	@Description: 启动路由
 func SetupRouter(
 	controller *c.Controller,
-	corsInterceptor *interceptor.CorsInterceptor,
 ) *gin.Engine {
 
 	r := gin.Default()
 
 	// 允许跨域
-	r.Use(corsInterceptor.Cors())
-
+	r.Use(interceptor.Cors())
+	r.Use(interceptor.TokenAuthorize())
 	//设置静态文件位置
 	r.Static("/static", "/")
 
