@@ -11,6 +11,7 @@ type User struct {
 	Username     string `gorm:"column:username" json:"username"`
 	LoginName    string `gorm:"column:login_name" json:"loginName"`
 	Password     string `gorm:"column:password" json:""`
+	Salt         string `gorm:"column:salt" json:""`
 	Email        string `gorm:"column:email" json:"email"`
 	Phone        string `gorm:"column:phone" json:"phone"`
 	Introduction string `gorm:"column:introduction" json:"introduction"`
