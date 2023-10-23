@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { defineStore } from 'pinia';
-import { reqLogin, reqUserInfo } from '@/api/account';
+import { reqSignIn, reqUserInfo } from '@/api/account';
 //@ts-ignore
 import cloneDeep from 'lodash/cloneDeep';
 
@@ -17,7 +17,7 @@ const useUserStore = defineStore('User', {
   },
   actions: {
     async userLogin(data: any) {
-      const result = await reqLogin(data);
+      const result = await reqSignIn(data);
       if (result.code == 200) {
         this.token = result.data;
         // 本地存一份
