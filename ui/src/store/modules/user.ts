@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { defineStore } from 'pinia';
 import { reqSignIn, reqUserInfo } from '@/api/account';
-//@ts-ignore
-import cloneDeep from 'lodash/cloneDeep';
 
 const useUserStore = defineStore('User', {
   state: (): any => {

@@ -95,7 +95,7 @@
   const sendEmailCode = async () => {
     let result = await reqSendCode({
       email: registerForm.email,
-      type: 'register',
+      type: 'signUp',
     });
     if (result.code == 200) {
       ElMessage({
