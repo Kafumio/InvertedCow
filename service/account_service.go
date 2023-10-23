@@ -4,7 +4,6 @@ import (
 	conf "InvertedCow/config"
 	"InvertedCow/dao"
 	e "InvertedCow/error"
-	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/utils"
 	"github.com/Chain-Zhang/pinyin"
@@ -25,8 +24,10 @@ type AccountService interface {
 	SendAuthCode(email string, kind string) (string, *e.Error)
 	// SignUp 用户注册
 	SignUp(user *po.User, code string) *e.Error
-	// PasswordSignIn 用户登录
+	// PasswordSignIn 用户密码登录
 	PasswordSignIn(account string, password string) (string, *e.Error)
+	// EmailSignIn 邮件登录
+	EmailSignIn(email string, code string) (string, *e.Error)
 }
 
 type accountService struct {
@@ -41,6 +42,7 @@ func NewAccountService(config conf.AppConfig,
 	return &accountService{
 		config:  config,
 		db:      db,
+		redis:   redis,
 		userDao: userDao,
 	}
 }
@@ -154,13 +156,46 @@ func (a *accountService) PasswordSignIn(account string, password string) (string
 	if !utils.ComparePwd(user.Password, password+user.Salt) {
 		return "", e.ErrUserNameOrPasswordWrong
 	}
-	userInfo := dto.NewUserInfo(user)
 	token, err := utils.GenerateToken(utils.Claims{
-		ID:        userInfo.ID,
-		Avatar:    userInfo.Avatar,
-		Username:  userInfo.Username,
-		LoginName: userInfo.LoginName,
-		Email:     userInfo.Email,
+		ID:        user.ID,
+		Avatar:    user.Avatar,
+		Username:  user.Username,
+		LoginName: user.LoginName,
+		Email:     user.Email,
+	})
+	if err != nil {
+		return "", e.ErrUserUnknownError
+	}
+	return token, nil
+}
+
+func (a *accountService) EmailSignIn(email string, code string) (string, *e.Error) {
+	if !utils.VerifyEmailFormat(email) {
+		return "", e.ErrUserEmailIsNotValid
+	}
+	// 获取用户
+	user, err := a.userDao.GetUserByEmail(a.db, email)
+	if err != nil {
+		return "", e.ErrMysql
+	}
+	if err == gorm.ErrRecordNotFound {
+		return "", e.ErrUserNotExist
+	}
+	// 检测验证码
+	key := SignInEmailProKey + email
+	result, err2 := a.redis.Get(key).Result()
+	if err2 != nil {
+		return "", e.ErrUserUnknownError
+	}
+	if result != code {
+		return "", e.ErrSignInCodeWrong
+	}
+	token, err := utils.GenerateToken(utils.Claims{
+		ID:        user.ID,
+		Avatar:    user.Avatar,
+		Username:  user.Username,
+		LoginName: user.LoginName,
+		Email:     user.Email,
 	})
 	if err != nil {
 		return "", e.ErrUserUnknownError
