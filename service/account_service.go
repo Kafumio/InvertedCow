@@ -31,13 +31,13 @@ type AccountService interface {
 }
 
 type accountService struct {
-	config  conf.AppConfig
+	config  *conf.AppConfig
 	db      *gorm.DB
 	redis   *redis.Client
 	userDao dao.UserDao
 }
 
-func NewAccountService(config conf.AppConfig,
+func NewAccountService(config *conf.AppConfig,
 	db *gorm.DB, redis *redis.Client, userDao dao.UserDao) AccountService {
 	return &accountService{
 		config:  config,

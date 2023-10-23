@@ -18,10 +18,11 @@ import (
 func initApp(*config.AppConfig) (*http.Server, error) {
 	panic(wire.Build(
 		dao.ProviderSet,
+		data.ProviderSet,
 		service.ProviderSet,
 		controller.ProviderSet,
 		interceptor.ProviderSet,
 		router.SetupRouter,
-		data.ProviderSet,
-		newApp))
+		newApp),
+	)
 }
