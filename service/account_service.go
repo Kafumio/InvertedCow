@@ -30,6 +30,8 @@ type AccountService interface {
 	PasswordSignIn(account string, password string) (string, *e.Error)
 	// EmailSignIn 邮件登录
 	EmailSignIn(email string, code string) (string, *e.Error)
+	// GetAccountInfo 读取账号信息
+	GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error)
 	// ChangePassword 修改用户密码
 	ChangePassword(ctx *gin.Context, oldPassword string, newPassword string) *e.Error
 	// UpdateAccount 更新账号信息
@@ -251,4 +253,13 @@ func (a *accountService) UpdateAccount(ctx *gin.Context, user *po.User) *e.Error
 		return e.ErrMysql
 	}
 	return nil
+}
+
+func (a *accountService) GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error) {
+	user := ctx.Keys["user"].(*dto.UserInfo)
+	userInfo, err := a.userDao.GetUserByID(a.db, user.ID)
+	if err == gorm.ErrRecordNotFound {
+		return nil, e.ErrUserNotExist
+	}
+	return dto.NewAccountInfo(userInfo), nil
 }

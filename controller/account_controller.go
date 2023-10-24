@@ -2,7 +2,6 @@ package controller
 
 import (
 	e "InvertedCow/error"
-	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
@@ -19,8 +18,8 @@ type AccountController interface {
 	SignIn(ctx *gin.Context)
 	// SignUp 用户注册
 	SignUp(ctx *gin.Context)
-	// GetUserInfo 从token里面读取用户信息
-	GetUserInfo(ctx *gin.Context)
+	// GetAccountInfo 从token里面读取用户信息
+	GetAccountInfo(ctx *gin.Context)
 	// ChangePassword 修改用户密码
 	ChangePassword(ctx *gin.Context)
 	// UpdateAccount 更新账号信息
@@ -116,10 +115,14 @@ func (a *accountController) SignIn(ctx *gin.Context) {
 	result.SuccessData(token)
 }
 
-func (a *accountController) GetUserInfo(ctx *gin.Context) {
+func (a *accountController) GetAccountInfo(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	user := ctx.Keys["user"].(*dto.UserInfo)
-	result.SuccessData(user)
+	accountInfo, err := a.accountService.GetAccountInfo(ctx)
+	if err != nil {
+		result.Error(err)
+		return
+	}
+	result.SuccessData(accountInfo)
 }
 
 func (a *accountController) ChangePassword(ctx *gin.Context) {
