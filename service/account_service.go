@@ -4,9 +4,11 @@ import (
 	conf "InvertedCow/config"
 	"InvertedCow/dao"
 	e "InvertedCow/error"
+	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/utils"
 	"github.com/Chain-Zhang/pinyin"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 	"time"
@@ -28,6 +30,10 @@ type AccountService interface {
 	PasswordSignIn(account string, password string) (string, *e.Error)
 	// EmailSignIn 邮件登录
 	EmailSignIn(email string, code string) (string, *e.Error)
+	// ChangePassword 修改用户密码
+	ChangePassword(ctx *gin.Context, oldPassword string, newPassword string) *e.Error
+	// UpdateAccount 更新账号信息
+	UpdateAccount(ctx *gin.Context, user *po.User) *e.Error
 }
 
 type accountService struct {
@@ -206,4 +212,43 @@ func (a *accountService) EmailSignIn(email string, code string) (string, *e.Erro
 		return "", e.ErrUserUnknownError
 	}
 	return token, nil
+}
+
+func (a *accountService) ChangePassword(ctx *gin.Context, oldPassword string, newPassword string) *e.Error {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
+	//检验用户名
+	user, err := a.userDao.GetUserByID(a.db, userInfo.ID)
+	if err == gorm.ErrRecordNotFound {
+		return e.ErrUserNotExist
+	}
+	if err != nil {
+		return e.ErrMysql
+	}
+	//检验旧密码
+	if !utils.ComparePwd(oldPassword+user.Salt, user.Password) {
+		return e.ErrUserNameOrPasswordWrong
+	}
+	password, getPwdErr := utils.GetPwd(newPassword + user.Salt)
+	if getPwdErr != nil {
+		return e.ErrPasswordEncodeFailed
+	}
+	user.Password = string(password)
+	err = a.userDao.UpdateUser(a.db, user)
+	if err != nil {
+		return e.ErrMysql
+	}
+	return nil
+}
+
+func (a *accountService) UpdateAccount(ctx *gin.Context, user *po.User) *e.Error {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
+	user.ID = userInfo.ID
+	// 不能更新账号名称和密码
+	user.LoginName = ""
+	user.Password = ""
+	err := a.userDao.UpdateUser(a.db, user)
+	if err != nil {
+		return e.ErrMysql
+	}
+	return nil
 }

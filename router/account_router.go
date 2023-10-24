@@ -12,6 +12,7 @@ func SetupAccountRoutes(r *gin.Engine, accountController controller.AccountContr
 		account.POST("/signUp", accountController.SignUp)
 		account.POST("/code/send", accountController.SendAuthCode)
 		account.GET("/get/info", accountController.GetUserInfo)
-
+		account.PUT("/password", accountController.ChangePassword)
+		account.PUT("", accountController.UpdateAccount)
 	}
 }
