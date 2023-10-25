@@ -2,7 +2,6 @@ package service
 
 import (
 	conf "InvertedCow/config"
-	"InvertedCow/dao"
 	"InvertedCow/model/dto"
 	"context"
 	"github.com/go-redis/redis"
@@ -15,8 +14,24 @@ type SourceService interface {
 }
 
 type sourceService struct {
-	config  *conf.AppConfig
-	db      *gorm.DB
-	redis   *redis.Client
-	userDao dao.SourceDao
+	config *conf.AppConfig
+	db     *gorm.DB
+	redis  *redis.Client
+}
+
+func NewSourceService(config *conf.AppConfig,
+	db *gorm.DB, redis *redis.Client) SourceService {
+	return &sourceService{
+		config: config,
+		db:     db,
+		redis:  redis,
+	}
+}
+
+func (s *sourceService) Token(ctx context.Context) (dto.Token, error) {
+	return dto.Token{}, nil
+}
+
+func (s *sourceService) Upload(ctx context.Context) error {
+	return nil
 }

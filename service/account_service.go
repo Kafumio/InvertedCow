@@ -3,12 +3,18 @@ package service
 import (
 	conf "InvertedCow/config"
 	"InvertedCow/dao"
+	"InvertedCow/data"
 	e "InvertedCow/error"
+	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/utils"
+	"errors"
 	"github.com/Chain-Zhang/pinyin"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
+	"mime/multipart"
+	"path"
 	"time"
 )
 
@@ -28,21 +34,31 @@ type AccountService interface {
 	PasswordSignIn(account string, password string) (string, *e.Error)
 	// EmailSignIn 邮件登录
 	EmailSignIn(email string, code string) (string, *e.Error)
+	// UploadAvatar 上传头像
+	UploadAvatar(file *multipart.FileHeader) (string, *e.Error)
+	// GetAccountInfo 读取账号信息
+	GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error)
+	// ChangePassword 修改用户密码
+	ChangePassword(ctx *gin.Context, oldPassword string, newPassword string) *e.Error
+	// UpdateAccount 更新账号信息
+	UpdateAccount(ctx *gin.Context, user *po.User) *e.Error
 }
 
 type accountService struct {
 	config  *conf.AppConfig
 	db      *gorm.DB
 	redis   *redis.Client
+	cos     *data.Cos
 	userDao dao.UserDao
 }
 
 func NewAccountService(config *conf.AppConfig,
-	db *gorm.DB, redis *redis.Client, userDao dao.UserDao) AccountService {
+	db *gorm.DB, redis *redis.Client, cos *data.Cos, userDao dao.UserDao) AccountService {
 	return &accountService{
 		config:  config,
 		db:      db,
 		redis:   redis,
+		cos:     cos,
 		userDao: userDao,
 	}
 }
@@ -206,4 +222,72 @@ func (a *accountService) EmailSignIn(email string, code string) (string, *e.Erro
 		return "", e.ErrUserUnknownError
 	}
 	return token, nil
+}
+
+func (a *accountService) ChangePassword(ctx *gin.Context, oldPassword string, newPassword string) *e.Error {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
+	//检验用户名
+	user, err := a.userDao.GetUserByID(a.db, userInfo.ID)
+	if err == gorm.ErrRecordNotFound {
+		return e.ErrUserNotExist
+	}
+	if err != nil {
+		return e.ErrMysql
+	}
+	//检验旧密码
+	if !utils.ComparePwd(oldPassword+user.Salt, user.Password) {
+		return e.ErrUserNameOrPasswordWrong
+	}
+	password, getPwdErr := utils.GetPwd(newPassword + user.Salt)
+	if getPwdErr != nil {
+		return e.ErrPasswordEncodeFailed
+	}
+	user.Password = string(password)
+	err = a.userDao.UpdateUser(a.db, user)
+	if err != nil {
+		return e.ErrMysql
+	}
+	return nil
+}
+
+func (a *accountService) UpdateAccount(ctx *gin.Context, user *po.User) *e.Error {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
+	user.ID = userInfo.ID
+	// 不能更新账号名称和密码
+	user.LoginName = ""
+	user.Password = ""
+	err := a.userDao.UpdateUser(a.db, user)
+	if err != nil {
+		return e.ErrMysql
+	}
+	return nil
+}
+
+func (a *accountService) GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error) {
+	user := ctx.Keys["user"].(*dto.UserInfo)
+	userInfo, err := a.userDao.GetUserByID(a.db, user.ID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, e.ErrUserNotExist
+	}
+	return dto.NewAccountInfo(userInfo), nil
+}
+
+const (
+	// UserAvatarPath cos中，用户图片存储的位置
+	UserAvatarPath = "/avatar/user"
+)
+
+func (a *accountService) UploadAvatar(file *multipart.FileHeader) (string, *e.Error) {
+	bucket := a.cos.NewImageBucket()
+	fileName := file.Filename
+	fileName = utils.GetUUID() + "." + path.Base(fileName)
+	file2, err := file.Open()
+	if err != nil {
+		return "", e.ErrBadRequest
+	}
+	err = bucket.PutFile(path.Join(UserAvatarPath, fileName), file2)
+	if err != nil {
+		return "", e.ErrServer
+	}
+	return bucket.MakeUrl(a.config.ImageProUrl, path.Join(UserAvatarPath, fileName)), nil
 }

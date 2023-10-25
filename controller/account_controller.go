@@ -2,12 +2,12 @@ package controller
 
 import (
 	e "InvertedCow/error"
-	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"InvertedCow/utils"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 // AccountController 关于一些账号信息的handler
@@ -18,8 +18,14 @@ type AccountController interface {
 	SignIn(ctx *gin.Context)
 	// SignUp 用户注册
 	SignUp(ctx *gin.Context)
-	// GetUserInfo 从token里面读取用户信息
-	GetUserInfo(ctx *gin.Context)
+	// GetAccountInfo 读取用户信息
+	GetAccountInfo(ctx *gin.Context)
+	// UploadAvatar 上传头像
+	UploadAvatar(ctx *gin.Context)
+	// ChangePassword 修改用户密码
+	ChangePassword(ctx *gin.Context)
+	// UpdateAccount 更新账号信息
+	UpdateAccount(ctx *gin.Context)
 }
 
 type accountController struct {
@@ -111,8 +117,77 @@ func (a *accountController) SignIn(ctx *gin.Context) {
 	result.SuccessData(token)
 }
 
-func (u *accountController) GetUserInfo(ctx *gin.Context) {
+func (a *accountController) GetAccountInfo(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	user := ctx.Keys["user"].(*dto.UserInfo)
-	result.SuccessData(user)
+	accountInfo, err := a.accountService.GetAccountInfo(ctx)
+	if err != nil {
+		result.Error(err)
+		return
+	}
+	result.SuccessData(accountInfo)
+}
+
+func (a *accountController) ChangePassword(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	oldPassword := ctx.PostForm("oldPassword")
+	newPassword := ctx.PostForm("newPassword")
+	if oldPassword == "" {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	if newPassword == "" {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	err := a.accountService.ChangePassword(ctx, oldPassword, newPassword)
+	if err != nil {
+		result.Error(err)
+	}
+	result.SuccessMessage("修改成功，请重新登录")
+}
+
+func (a *accountController) UpdateAccount(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	user := &po.User{}
+	user.Avatar = ctx.PostForm("avatar")
+	user.Username = ctx.PostForm("username")
+	user.Introduction = ctx.PostForm("introduction")
+	sex := ctx.PostForm("sex")
+	if sex == "2" {
+		user.Sex = 2
+	} else if sex == "1" {
+		user.Sex = 1
+	}
+	birthDay := ctx.PostForm("birthDay")
+	t, err2 := time.ParseInLocation("2006-01-02 15:04:05", birthDay, time.Local)
+	if err2 != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	user.BirthDay = t
+	err3 := a.accountService.UpdateAccount(ctx, user)
+	if err3 != nil {
+		result.Error(err3)
+		return
+	}
+	result.SuccessMessage("提交成功，重新登录可更新数据")
+}
+
+func (a *accountController) UploadAvatar(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	file, err := ctx.FormFile("avatar")
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	if file.Size > 2<<20 {
+		result.SimpleErrorMessage("文件大小不能超过2m")
+		return
+	}
+	path, err2 := a.accountService.UploadAvatar(file)
+	if err2 != nil {
+		result.Error(err2)
+		return
+	}
+	result.SuccessData(path)
 }
