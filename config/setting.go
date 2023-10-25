@@ -18,5 +18,6 @@ func InitSetting(file string) (*AppConfig, error) {
 	config.MySqlConfig = NewMySqlConfig(cfg)
 	config.RedisConfig = NewRedisConfig(cfg)
 	config.EmailConfig = NewEmailConfig(cfg)
+	config.CosConfig = NewCosConfig(cfg)
 	return config, nil
 }
