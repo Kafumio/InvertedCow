@@ -7,4 +7,5 @@ type AppConfig struct {
 	*MySqlConfig
 	*RedisConfig
 	*EmailConfig
+	*SourceConfig
 }
