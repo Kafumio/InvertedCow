@@ -25,18 +25,18 @@ func NewCos(config *conf.AppConfig) *Cos {
 	}
 }
 
-func (c *Cos) NewImageBucket() *Bucket {
-	return c.NewBucket(c.cosConfig.ImageBucket)
-}
-
-func (c *Cos) NewBucket(bucketName string) *Bucket {
+func (c Cos) NewBucket(bucket string) *Bucket {
 	return &Bucket{
 		cosConfig: c.cosConfig,
 		mac:       c.mac,
 		putPolicy: storage.PutPolicy{
-			Scope: bucketName,
+			Scope: bucket,
 		},
 	}
+}
+
+func (c *Cos) NewImageBucket() *Bucket {
+	return c.NewBucket(c.cosConfig.ImageBucket)
 }
 
 type Bucket struct {
@@ -46,13 +46,13 @@ type Bucket struct {
 }
 
 // PutFile 上传文件，以数据流的形式
-func (b *Bucket) PutFile(key string, reader io.Reader) {
+func (b *Bucket) PutFile(key string, reader io.Reader) error {
 	// 生成上传屏障
 	upToken := b.putPolicy.UploadToken(b.mac)
 	cfg := storage.Config{}
 	// 空间对应的机房
-	if b.cosConfig.Region == "ZoneHuadong" {
-		cfg.Region = &storage.ZoneHuadong
+	if b.cosConfig.Region == "ZoneHuanan" {
+		cfg.Region = &storage.ZoneHuanan
 	}
 	// 是否使用https域名
 	cfg.UseHTTPS = true
@@ -63,13 +63,9 @@ func (b *Bucket) PutFile(key string, reader io.Reader) {
 	putExtra := storage.RputV2Extra{}
 	total, err := GetReaderLen(reader)
 	if err != nil {
-		return
+		return err
 	}
-	err = formUploader.Put(context.Background(), &ret, upToken, key, reader.(io.ReaderAt), total, &putExtra)
-	if err != nil {
-		return
-	}
-	fmt.Println(ret.Key, ret.Hash)
+	return formUploader.Put(context.Background(), &ret, upToken, key, reader.(io.ReaderAt), total, &putExtra)
 }
 
 func GetReaderLen(reader io.Reader) (length int64, err error) {
