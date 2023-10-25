@@ -18,8 +18,10 @@ type AccountController interface {
 	SignIn(ctx *gin.Context)
 	// SignUp 用户注册
 	SignUp(ctx *gin.Context)
-	// GetAccountInfo 从token里面读取用户信息
+	// GetAccountInfo 读取用户信息
 	GetAccountInfo(ctx *gin.Context)
+	// UploadAvatar 上传头像
+	UploadAvatar(ctx *gin.Context)
 	// ChangePassword 修改用户密码
 	ChangePassword(ctx *gin.Context)
 	// UpdateAccount 更新账号信息
@@ -169,4 +171,23 @@ func (a *accountController) UpdateAccount(ctx *gin.Context) {
 		return
 	}
 	result.SuccessMessage("提交成功，重新登录可更新数据")
+}
+
+func (a *accountController) UploadAvatar(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	file, err := ctx.FormFile("avatar")
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	if file.Size > 2<<20 {
+		result.SimpleErrorMessage("文件大小不能超过2m")
+		return
+	}
+	path, err2 := a.accountService.UploadAvatar(file)
+	if err2 != nil {
+		result.Error(err2)
+		return
+	}
+	result.SuccessData(path)
 }
