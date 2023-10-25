@@ -20,6 +20,8 @@ const (
 	CodePasswordEncodeFailed          // 密码加密失败
 	CodeUserNotExist                  // 用户不存在
 	CodeUserUnknownError              // 用户服务未知错误
+	CodeAddFollowFailed               // 用户关注失败
+	CodeCancelFollowFailed            // 用户取消关注失败
 )
 
 var (
@@ -37,4 +39,6 @@ var (
 	ErrUserRegisterFail              = NewError(CodeUserRegisterFail, "register fail", ErrTypeBus)
 	ErrUserTypeNotSupport            = NewError(CodeUserTypeNotSupport, "type not support", ErrTypeBus)
 	ErrUserInvalidToken              = NewError(CodeUserInvalidToken, "invalid token", ErrTypeBus)
+	ErrAddFollowFailed               = NewError(CodeAddFollowFailed, "add follow failed", ErrTypeBus)
+	ErrCancelFollowFailed            = NewError(CodeCancelFollowFailed, "cancel follow failed", ErrTypeBus)
 )

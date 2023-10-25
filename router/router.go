@@ -24,6 +24,7 @@ func SetupRouter(
 	//ping
 	r.GET("/ping", c.Ping)
 	SetupAccountRoutes(r, controller.AccountController)
+	SetupRelationRoutes(r, controller.RelationController)
 
 	return r
 }
