@@ -8,6 +8,7 @@ enum API {
   SEND_CODE_URL = '/account/code/send',
   GET_INFO_URL = '/account/get/info',
   CHANGE_PASSWORD_URL = '/account/password',
+  AVATAR_URL = '/account/avatar/upload',
 }
 
 // reqSignIn 登录
@@ -42,8 +43,8 @@ export const reqAccountInfo = (): Promise<any> => {
   return request.get(API.GET_INFO_URL);
 };
 
-// reqUpdateAcccount 更新账号信息
-export const reqUpdateAcccount = (data: any): Promise<any> => {
+// reqUpdateAccount 更新账号信息
+export const reqUpdateAccount = (data: any): Promise<any> => {
   return request.put(API.ACCOUNT_URL, toFormData(data), {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -51,9 +52,18 @@ export const reqUpdateAcccount = (data: any): Promise<any> => {
   });
 };
 
-// requestChangePassword 修改密码
-export const requestChangePassword = (data: any): Promise<any> => {
+// reqChangePassword 修改密码
+export const reqChangePassword = (data: any): Promise<any> => {
   return request.put(API.CHANGE_PASSWORD_URL, toFormData(data), {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
+// reqUploadAvatar 上传头像
+export const reqUploadAvatar = (data: any): Promise<any> => {
+  return request.post(API.AVATAR_URL, toFormData(data), {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

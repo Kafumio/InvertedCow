@@ -41,6 +41,7 @@ func (c *Cos) NewImageBucket() *Bucket {
 
 type Bucket struct {
 	cosConfig *conf.CosConfig
+	proUrl    string
 	mac       *qbox.Mac
 	putPolicy storage.PutPolicy
 }
@@ -65,9 +66,26 @@ func (b *Bucket) PutFile(key string, reader io.Reader) error {
 	if err != nil {
 		return err
 	}
+	// 判断key是否以/开头
+	if len(key) > 0 && key[0] == '/' {
+		key = key[1:]
+	}
 	return formUploader.Put(context.Background(), &ret, upToken, key, reader.(io.ReaderAt), total, &putExtra)
 }
 
+// MakeUrl 生成访问对象存储的url
+// key 文件路径
+// proUrl
+func (b *Bucket) MakeUrl(proUrl string, key string) string {
+	// 判断key是否以/开头
+	if len(key) > 0 && key[0] == '/' {
+		key = key[1:]
+	}
+	publicAccessURL := storage.MakePublicURL(proUrl, key)
+	return publicAccessURL
+}
+
+// GetReaderLen 读取reader的长度
 func GetReaderLen(reader io.Reader) (length int64, err error) {
 	switch v := reader.(type) {
 	case *bytes.Buffer:
@@ -83,10 +101,21 @@ func GetReaderLen(reader io.Reader) (length int64, err error) {
 		} else {
 			length = stat.Size()
 		}
-	case *io.LimitedReader:
+	case *LimitedReadCloser:
 		length = int64(v.N)
+	case FixedLengthReader:
+		length = v.Size()
 	default:
 		err = fmt.Errorf("can't get reader content length, unkown reader type")
 	}
 	return
+}
+
+type FixedLengthReader interface {
+	io.Reader
+	Size() int64
+}
+
+type LimitedReadCloser struct {
+	io.LimitedReader
 }

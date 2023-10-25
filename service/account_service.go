@@ -288,5 +288,5 @@ func (a *accountService) UploadAvatar(file *multipart.FileHeader) (string, *e.Er
 	if err != nil {
 		return "", e.ErrServer
 	}
-	return path.Join(a.config.ImageProUrl, UserAvatarPath, fileName), nil
+	return bucket.MakeUrl(a.config.ImageProUrl, path.Join(UserAvatarPath, fileName)), nil
 }
