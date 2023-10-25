@@ -12,7 +12,7 @@ type MySqlConfig struct {
 	Port     string `ini:"port"`     //端口
 }
 
-func NewMySqlConfig(cfg *ini.File) *MySqlConfig {
+func newMySqlConfig(cfg *ini.File) *MySqlConfig {
 	mysqlConfig := &MySqlConfig{}
 	cfg.Section("mysql").MapTo(mysqlConfig)
 	return mysqlConfig

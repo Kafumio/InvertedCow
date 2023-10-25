@@ -9,7 +9,7 @@ type EmailConfig struct {
 	Password string `ini:"pass"`
 }
 
-func NewEmailConfig(cfg *ini.File) *EmailConfig {
+func newEmailConfig(cfg *ini.File) *EmailConfig {
 	emailConfig := &EmailConfig{}
 	cfg.Section("email").MapTo(emailConfig)
 	return emailConfig
