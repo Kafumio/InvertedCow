@@ -96,6 +96,7 @@
           message: result.message,
           type: 'success',
         });
+        changeRoute('home');
       } else {
         ElMessage({
           showClose: true,
@@ -143,7 +144,7 @@
   };
 
   const cancelAccountSubmit = () => {
-    changeRoute('myprofile');
+    changeRoute('home');
   };
 
   const dateToStr = (date: Date): string => {

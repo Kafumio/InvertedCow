@@ -16,18 +16,17 @@ export const constantRoute = [
         path: '/signIn',
         component: () => import('@/views/sign_in/index.vue'),
         name: 'signIn',
-        meta: {
-          hidden: false,
-        },
       },
       {
         path: '/signUp',
         component: () => import('@/views/sign_up/index.vue'),
         name: 'signUp',
-        meta: {
-          hidden: false,
-        },
       },
+      {
+        path: '/account/setting',
+        component: () => import('@/views/setting/index.vue'),
+        name: 'accountSetting',
+      }
     ],
   },
 ];
