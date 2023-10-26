@@ -8,6 +8,8 @@ type CosConfig struct {
 	Region      string `ini:"region"`
 	ImageBucket string `ini:"imageBucket"`
 	ImageProUrl string `ini:"imageProUrl"`
+	VideoBucket string `ini:"videoBucket"`
+	VideoProUrl string `ini:"videoProUrl"`
 }
 
 func newCosConfig(cfg *ini.File) *CosConfig {

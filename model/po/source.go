@@ -7,7 +7,7 @@ import (
 type Source struct {
 	gorm.Model
 	UID        string `gorm:"column:uid;comment:业务唯一标识" json:"uid"`
-	MD5        string `gorm:"column:md5" json:"md5"`
+	Hash       string `gorm:"column:hash" json:"hash"`
 	Size       int64  `gorm:"column:size;comment:文件大小" json:"size"`
 	SourceUrl  string `gorm:"column:source_url;comment:资源链接" json:"source_url"`
 	SourceType int    `gorm:"column:source_type;comment:资源类型 1图片 2视频" json:"source_type"`

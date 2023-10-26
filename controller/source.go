@@ -1,29 +1,41 @@
 package controller
 
 import (
+	e "InvertedCow/error"
+	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
-type SourceController interface {
-	Token(ctx *gin.Context)
-	Upload(ctx *gin.Context) // 回调
+type PostController interface {
+	Post(ctx *gin.Context)
 }
 
-type sourceController struct {
-	sourceService service.SourceService
+type postController struct {
+	postService service.PostService
 }
 
-func NewSourceController(sourceService service.SourceService) SourceController {
-	return &sourceController{
-		sourceService: sourceService,
+func NewPostController(postService service.PostService) PostController {
+	return &postController{
+		postService: postService,
 	}
 }
 
-func (s *sourceController) Token(ctx *gin.Context) {
-
-}
-
-func (s *sourceController) Upload(ctx *gin.Context) {
-
+func (p *postController) Post(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	originText := ctx.PostForm("originText")
+	userId := int64(1)
+	var hasSource bool
+	hasSourceRaw := strings.ToLower(ctx.PostForm("hasSource"))
+	if hasSourceRaw == "true" {
+		hasSource = true
+	}
+	token, err := p.postService.Post(ctx, originText, userId, hasSource)
+	if err != nil {
+		// TODO: record and report
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	result.SuccessData(token)
 }
