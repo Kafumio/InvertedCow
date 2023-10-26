@@ -8,9 +8,11 @@ type CosConfig struct {
 	Region      string `ini:"region"`
 	ImageBucket string `ini:"imageBucket"`
 	ImageProUrl string `ini:"imageProUrl"`
+	VideoBucket string `ini:"videoBucket"`
+	VideoProUrl string `ini:"videoProUrl"`
 }
 
-func NewCosConfig(cfg *ini.File) *CosConfig {
+func newCosConfig(cfg *ini.File) *CosConfig {
 	cosConfig := &CosConfig{}
 	cfg.Section("cos").MapTo(cosConfig)
 	return cosConfig

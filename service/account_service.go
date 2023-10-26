@@ -8,6 +8,7 @@ import (
 	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"InvertedCow/utils"
+	"errors"
 	"github.com/Chain-Zhang/pinyin"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
@@ -265,7 +266,7 @@ func (a *accountService) UpdateAccount(ctx *gin.Context, user *po.User) *e.Error
 func (a *accountService) GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error) {
 	user := ctx.Keys["user"].(*dto.UserInfo)
 	userInfo, err := a.userDao.GetUserByID(a.db, user.ID)
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, e.ErrUserNotExist
 	}
 	return dto.NewAccountInfo(userInfo), nil

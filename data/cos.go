@@ -25,18 +25,30 @@ func NewCos(config *conf.AppConfig) *Cos {
 	}
 }
 
-func (c Cos) NewBucket(bucket string) *Bucket {
+func (c *Cos) NewBucket(bucket, returnBody, CallbackURL, CallbackBody, CallbackBodyType string) *Bucket {
 	return &Bucket{
 		cosConfig: c.cosConfig,
 		mac:       c.mac,
 		putPolicy: storage.PutPolicy{
-			Scope: bucket,
+			Scope:            bucket,
+			ReturnBody:       returnBody,
+			CallbackURL:      CallbackURL,
+			CallbackBody:     CallbackBody,
+			CallbackBodyType: CallbackBodyType,
 		},
 	}
 }
 
+func (c *Cos) NewBucketOnlyBucket(bucket string) *Bucket {
+	return c.NewBucket(bucket, "", "", "", "")
+}
+
 func (c *Cos) NewImageBucket() *Bucket {
-	return c.NewBucket(c.cosConfig.ImageBucket)
+	return c.NewBucketOnlyBucket(c.cosConfig.ImageBucket)
+}
+
+func (c *Cos) NewVideoBucket() *Bucket {
+	return c.NewBucket(c.cosConfig.VideoBucket, "", "", "", "")
 }
 
 type Bucket struct {
@@ -109,6 +121,10 @@ func GetReaderLen(reader io.Reader) (length int64, err error) {
 		err = fmt.Errorf("can't get reader content length, unkown reader type")
 	}
 	return
+}
+
+func (b *Bucket) Token() string {
+	return b.putPolicy.UploadToken(b.mac)
 }
 
 type FixedLengthReader interface {

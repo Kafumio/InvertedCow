@@ -8,7 +8,7 @@ type RedisConfig struct {
 	Password string `ini:"password"`
 }
 
-func NewRedisConfig(cfg *ini.File) *RedisConfig {
+func newRedisConfig(cfg *ini.File) *RedisConfig {
 	redisConfig := &RedisConfig{}
 	cfg.Section("redis").MapTo(redisConfig)
 	return redisConfig

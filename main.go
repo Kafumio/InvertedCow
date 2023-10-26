@@ -1,13 +1,19 @@
 package main
 
 import (
-	"InvertedCow/config"
-	"fmt"
-	"github.com/gin-gonic/gin"
+	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
+
+	"InvertedCow/config"
+
+	"github.com/gin-gonic/gin"
 )
 
 func newApp(engine *gin.Engine, config *config.AppConfig) *http.Server {
@@ -19,15 +25,15 @@ func newApp(engine *gin.Engine, config *config.AppConfig) *http.Server {
 }
 
 func main() {
-	//获取参数
+	// 获取参数
 	path, _ := os.Getwd()
 	path = strings.ReplaceAll(path, "\\", "/")
 	path = path + "/conf/config.ini"
 
-	//加载配置
+	// 加载配置
 	conf, err := config.InitSetting(path)
 	if err != nil {
-		fmt.Println("加载配置文件出错")
+		log.Println("加载配置文件出错")
 		return
 	}
 
@@ -35,14 +41,27 @@ func main() {
 		log.Println(err)
 	}
 
-	//注册路由
+	// 注册路由
 	srv, err := initApp(conf)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
+	go func() {
+		if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Println(err)
+		}
+	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
 
-	if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		fmt.Println(err)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err = srv.Shutdown(ctx); err != nil {
+		log.Println("Server Shutdown error: ", err)
 	}
+	log.Println("Server exiting")
 }

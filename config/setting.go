@@ -13,11 +13,14 @@ func InitSetting(file string) (*AppConfig, error) {
 		return nil, err
 	}
 	config := new(AppConfig)
-	cfg.MapTo(config)
+	err = cfg.MapTo(config)
+	if err != nil {
+		return nil, err
+	}
 
-	config.MySqlConfig = NewMySqlConfig(cfg)
-	config.RedisConfig = NewRedisConfig(cfg)
-	config.EmailConfig = NewEmailConfig(cfg)
-	config.CosConfig = NewCosConfig(cfg)
+	config.MySqlConfig = newMySqlConfig(cfg)
+	config.RedisConfig = newRedisConfig(cfg)
+	config.EmailConfig = newEmailConfig(cfg)
+	config.CosConfig = newCosConfig(cfg)
 	return config, nil
 }
