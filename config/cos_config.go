@@ -3,13 +3,14 @@ package config
 import "gopkg.in/ini.v1"
 
 type CosConfig struct {
-	AccessKey   string `ini:"accessKey"`
-	SecretKey   string `ini:"secretKey"`
-	Region      string `ini:"region"`
-	ImageBucket string `ini:"imageBucket"`
-	ImageProUrl string `ini:"imageProUrl"`
-	VideoBucket string `ini:"videoBucket"`
-	VideoProUrl string `ini:"videoProUrl"`
+	AccessKey      string `ini:"accessKey"`
+	SecretKey      string `ini:"secretKey"`
+	Region         string `ini:"region"`
+	ImageBucket    string `ini:"imageBucket"`
+	ImageProUrl    string `ini:"imageProUrl"`
+	VideoBucket    string `ini:"videoBucket"`
+	VideoProUrl    string `ini:"videoProUrl"`
+	UploadCallback string `ini:"uploadCallback"`
 }
 
 func newCosConfig(cfg *ini.File) *CosConfig {

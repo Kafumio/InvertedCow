@@ -11,6 +11,7 @@ import (
 
 type PostController interface {
 	Post(ctx *gin.Context)
+	Upload(ctx *gin.Context)
 }
 
 type postController struct {
@@ -44,4 +45,9 @@ func (p *postController) Post(ctx *gin.Context) {
 		return
 	}
 	result.SuccessData(token)
+}
+
+// Upload 给七牛云的回调，用于绑定业务属性
+func (p *postController) Upload(ctx *gin.Context) {
+
 }

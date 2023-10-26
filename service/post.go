@@ -14,6 +14,7 @@ import (
 
 type PostService interface {
 	Post(ctx context.Context, originText string, publisher int64, hasSource bool) (*dto.Token, error)
+	Upload(ctx context.Context, id, hash, key, bucket, uid string, fSize int64) error // 回调，主要是绑定业务属性
 }
 
 type postService struct {
@@ -22,16 +23,18 @@ type postService struct {
 	cos    *data.Cos
 	redis  *redis.Client
 	pd     dao.PostDao
+	sd     dao.SourceDao
 }
 
 func NewPostService(config *conf.AppConfig,
-	db *gorm.DB, cos *data.Cos, redis *redis.Client, pd dao.PostDao) PostService {
+	db *gorm.DB, cos *data.Cos, redis *redis.Client, pd dao.PostDao, sd dao.SourceDao) PostService {
 	return &postService{
 		config: config,
 		db:     db,
 		cos:    cos,
 		redis:  redis,
 		pd:     pd,
+		sd:     sd,
 	}
 }
 
@@ -68,4 +71,35 @@ func (p *postService) Post(ctx context.Context, originText string, userId int64,
 		return nil, err
 	}
 	return token, nil
+}
+
+// Upload
+// 1. 存储source info
+// 2. 关联业务属性
+// 3. 返回响应
+// TODO: transaction
+func (p *postService) Upload(ctx context.Context, id, hash, key, bucket, uid string, fSize int64) error {
+	source := &po.Source{
+		UID:       uid, // origin_post_uid
+		FileID:    id,
+		Hash:      hash,
+		Size:      fSize,
+		SourceUrl: key, // TODO: source type, recording to the suffix of the key. Or get from request
+		Bucket:    bucket,
+	}
+	err := p.sd.InsertSource(p.db, source)
+	if err != nil {
+		// TODO: log
+		return err
+	}
+	post, err := p.pd.GetPostByUID(p.db, uid)
+	if err != nil {
+		return err
+	}
+	post.State = 2 // TODO: 目前只支持单source发布。
+	err = p.pd.UpdatePost(p.db, post)
+	if err != nil {
+		return err
+	}
+	return nil
 }

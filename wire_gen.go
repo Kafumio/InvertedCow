@@ -7,13 +7,14 @@
 package main
 
 import (
+	"net/http"
+
 	"InvertedCow/config"
 	"InvertedCow/controller"
 	"InvertedCow/dao"
 	"InvertedCow/data"
 	"InvertedCow/router"
 	"InvertedCow/service"
-	"net/http"
 )
 
 // Injectors from wire.go:
@@ -26,7 +27,8 @@ func initApp(appConfig *config.AppConfig) (*http.Server, error) {
 	accountService := service.NewAccountService(appConfig, db, client, cos, userDao)
 	accountController := controller.NewAccountController(accountService)
 	postDao := dao.NewPostDao()
-	postService := service.NewPostService(appConfig, db, cos, client, postDao)
+	sourceDao := dao.NewSourceDao()
+	postService := service.NewPostService(appConfig, db, cos, client, postDao, sourceDao)
 	postController := controller.NewPostController(postService)
 	controllerController := controller.NewController(accountController, postController)
 	engine := router.SetupRouter(controllerController)
