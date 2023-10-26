@@ -20,17 +20,32 @@
         <el-button type="primary" @click="updateAccount">修改</el-button>
       </div>
     </el-card>
+    <el-card class="password-card">
+      <template #header> 密码修改 </template>
+      <div class="password">
+        <div class="text">
+          密码： ************
+        </div>
+        <el-button type="primary" @click="changePassword">修改</el-button>
+      </div>
+    </el-card>
   </div>
 
-  <BaseSetting v-model:visible="baseSettingVisible" @afterSubmit="readAccount"></BaseSetting>
+  <BaseSetting v-model:visible="baseSettingVisible" @afterSubmit="readAccount"/>
+  <PasswordSetting v-model:visible="changePasswordVisible" @afterSubmit="logout"/>
 </template>
 
 <script setup lang="ts">
   import { reactive, onMounted, ref } from 'vue';
   import { ElMessage } from 'element-plus';
   import { reqAccountInfo } from '@/api/account';
+  import { useRouter} from 'vue-router';
+  import useUserStore from '@/store/modules/user';
   import BaseSetting from './base-setting.vue';
+  import PasswordSetting from './password-setting.vue';
 
+  let userStore = useUserStore();
+  const $router = useRouter();  
   let account = reactive({
     avatar: '',
     username: '',
@@ -39,6 +54,7 @@
     birthDay: new Date(),
   });
   let baseSettingVisible = ref(false);
+  let changePasswordVisible = ref(false);
 
   // 获取账号
   const readAccount = async () => {
@@ -64,6 +80,15 @@
     baseSettingVisible.value = true;
   };
 
+  const changePassword = () => {
+    changePasswordVisible.value = true;
+  };
+
+  const logout = () => {
+    userStore.userLogout();
+    $router.push({ path: '/signIn'});
+  };
+
   onMounted(() => {
     readAccount();
   });
@@ -75,9 +100,11 @@
     width: 100%;
     position: relative;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     .account-base-card {
-      margin: 20px;
+      margin-top: 30px;
+      margin-left:auto;
+      margin-right: auto;
       height: 280px;
       width: 800px;
       .message {
@@ -112,6 +139,21 @@
       .setting {
         display: flex;
         justify-content: center;
+      }
+    }
+    .password-card {
+      margin-top: 30px;
+      margin-left:auto;
+      margin-right: auto;
+      height: 120px;
+      width: 800px;
+      .password {
+        display: flex;
+        flex-direction: row;
+        .text {
+          margin-left: 50px;
+          margin-right: 50px;
+        }
       }
     }
   }
