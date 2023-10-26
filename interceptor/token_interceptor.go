@@ -30,11 +30,13 @@ func TokenAuthorize() gin.HandlerFunc {
 		token := c.Request.Header.Get("token")
 		claims, err := utils.ParseToken(token)
 		userInfo := &dto.UserInfo{
-			ID:        claims.ID,
-			Avatar:    claims.Avatar,
-			LoginName: claims.LoginName,
-			Username:  claims.Username,
-			Email:     claims.Email,
+			ID:            claims.ID,
+			Avatar:        claims.Avatar,
+			LoginName:     claims.LoginName,
+			Username:      claims.Username,
+			Email:         claims.Email,
+			FollowCount:   claims.FollowCount,
+			FollowerCount: claims.FollowerCount,
 		}
 		if err != nil || userInfo == nil {
 			r.Error(e.ErrSessionInvalid)

@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"InvertedCow/model/dto"
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 // RelationController 关于用户之间关系的一些handler
@@ -30,13 +32,13 @@ func NewRelationController(relationService service.RelationService) RelationCont
 
 func (r *relationController) AddFollow(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	userId := ctx.GetInt("userId")
-	userToId := ctx.GetInt("userToId")
-	if userId == 0 || userToId == 0 {
-		result.SimpleErrorMessage("解析 userId 或 userToId 失败")
+	userId := ctx.Keys["user"].(*dto.UserInfo).ID
+	userToId, err := strconv.Atoi(ctx.PostForm("userToId"))
+	if err != nil {
+		result.SimpleErrorMessage("解析userToId失败")
 		return
 	}
-	if err := r.relationService.AddFollow(userId, userToId); err != nil {
+	if err := r.relationService.AddFollow(userId, uint(userToId)); err != nil {
 		result.Error(err)
 		return
 	}
@@ -45,13 +47,13 @@ func (r *relationController) AddFollow(ctx *gin.Context) {
 
 func (r *relationController) CancelFollow(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	userId := ctx.GetInt("userId")
-	userToId := ctx.GetInt("userToId")
-	if userId == 0 || userToId == 0 {
-		result.SimpleErrorMessage("解析 userId 或 userToId 失败")
+	userId := ctx.Keys["user"].(*dto.UserInfo).ID
+	userToId, err := strconv.Atoi(ctx.PostForm("userToId"))
+	if err != nil {
+		result.SimpleErrorMessage("解析userToId失败")
 		return
 	}
-	if err := r.relationService.CancelFollow(userId, userToId); err != nil {
+	if err := r.relationService.CancelFollow(userId, uint(userToId)); err != nil {
 		result.Error(err)
 		return
 	}
@@ -60,11 +62,7 @@ func (r *relationController) CancelFollow(ctx *gin.Context) {
 
 func (r *relationController) GetFollowList(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	userId := ctx.GetInt("userId")
-	if userId == 0 {
-		result.SimpleErrorMessage("解析 userId 失败")
-		return
-	}
+	userId := ctx.Keys["user"].(*dto.UserInfo).ID
 	followList, err := r.relationService.GetFollowList(userId)
 	if err != nil {
 		result.Error(err)
@@ -75,11 +73,7 @@ func (r *relationController) GetFollowList(ctx *gin.Context) {
 
 func (r *relationController) GetFollowerList(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	userId := ctx.GetInt("userId")
-	if userId == 0 {
-		result.SimpleErrorMessage("解析 userId 失败")
-		return
-	}
+	userId := ctx.Keys["user"].(*dto.UserInfo).ID
 	followerList, err := r.relationService.GetFollowerList(userId)
 	if err != nil {
 		result.Error(err)
