@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// PostDao
+// TODO: crud
 type PostDao interface {
 	InsertPost(db *gorm.DB, post *po.Post) error
 	GetPostByUID(db *gorm.DB, uid string) (*po.Post, error)

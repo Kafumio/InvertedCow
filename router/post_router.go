@@ -9,5 +9,6 @@ func SetupPostRoutes(r *gin.Engine, postController controller.PostController) {
 	account := r.Group("/post")
 	{
 		account.POST("/", postController.Post)
+		account.POST("/upload", postController.Upload)
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
+// SourceDao
+// TODO: crud
 type SourceDao interface {
 	InsertSource(db *gorm.DB, Source *po.Source) error
 }

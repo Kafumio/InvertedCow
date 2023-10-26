@@ -2,7 +2,7 @@ package po
 
 import "gorm.io/gorm"
 
-// 发布流程：
+// docs 发布流程：
 // 1. 用户选择发布动态
 // 2. 收到返回的Token，动态state处于发布中
 // 3. 客户端使用token上传文件

@@ -74,6 +74,7 @@ func (p *postService) Post(ctx context.Context, originText string, userId int64,
 }
 
 // Upload
+// docs
 // 1. 存储source info
 // 2. 关联业务属性
 // 3. 返回响应

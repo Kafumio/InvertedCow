@@ -47,7 +47,19 @@ func (p *postController) Post(ctx *gin.Context) {
 	result.SuccessData(token)
 }
 
-// Upload 给七牛云的回调，用于绑定业务属性
+// Upload 提供给七牛云的回调，用于绑定业务属性
 func (p *postController) Upload(ctx *gin.Context) {
-
+	result := vo.NewResult(ctx)
+	source := &dto.Source{}
+	err := ctx.ShouldBindJSON(source)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, source.Name, source.FSize)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	result.SuccessMessage("ok") // TODO
 }
