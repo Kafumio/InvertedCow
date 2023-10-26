@@ -56,7 +56,7 @@ func (p *postService) Post(ctx context.Context, originText string, userId int64,
 		}, nil
 	}
 	// 生成授权Token
-	// TODO: 时限监听 —— 连接 Token时效，避免上传成功但动态发布失败。
+	// TODO: 时限监听 —— 连接 Token 时效，避免上传成功但动态发布失败。
 	bucket := p.cos.NewVideoBucket()
 
 	token := &dto.Token{

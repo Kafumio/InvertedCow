@@ -178,11 +178,7 @@ func (a *accountService) PasswordSignIn(account string, password string) (string
 		return "", e.ErrUserNameOrPasswordWrong
 	}
 	token, err := utils.GenerateToken(utils.Claims{
-		ID:        user.ID,
-		Avatar:    user.Avatar,
-		Username:  user.Username,
-		LoginName: user.LoginName,
-		Email:     user.Email,
+		ID: user.ID,
 	})
 	if err != nil {
 		return "", e.ErrUserUnknownError
@@ -212,11 +208,7 @@ func (a *accountService) EmailSignIn(email string, code string) (string, *e.Erro
 		return "", e.ErrSignInCodeWrong
 	}
 	token, err := utils.GenerateToken(utils.Claims{
-		ID:        user.ID,
-		Avatar:    user.Avatar,
-		Username:  user.Username,
-		LoginName: user.LoginName,
-		Email:     user.Email,
+		ID: user.ID,
 	})
 	if err != nil {
 		return "", e.ErrUserUnknownError
