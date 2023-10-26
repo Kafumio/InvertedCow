@@ -14,12 +14,15 @@ import './premisstion';
 // 全局样式
 import '@/styles/index.scss';
 import App from './App.vue';
+// 全局组件
+import gloalComponent from '@/components';
 
 const app = createApp(App);
 app.use(ElementPlus, {
   //element-plus国际化
   locale: zhCn,
 });
+app.use(gloalComponent);
 app.use(router);
 app.use(pinia);
 app.mount('#app');
