@@ -2,7 +2,7 @@ package dto
 
 import (
 	"InvertedCow/model/po"
-	"time"
+	"InvertedCow/utils"
 )
 
 // UserInfo token里面存储的数据
@@ -34,8 +34,8 @@ type AccountInfo struct {
 	Email        string `json:"email"`
 	Introduction string `json:"introduction"`
 	// 1表示男 2表示女
-	Sex      int       `json:"sex"`
-	BirthDay time.Time `json:"birthDay"`
+	Sex      int        `json:"sex"`
+	BirthDay utils.Time `json:"birthDay"`
 }
 
 func NewAccountInfo(user *po.User) *AccountInfo {
@@ -47,7 +47,7 @@ func NewAccountInfo(user *po.User) *AccountInfo {
 		Email:        user.Email,
 		Introduction: user.Introduction,
 		Sex:          user.Sex,
-		BirthDay:     user.BirthDay,
+		BirthDay:     utils.Time(user.BirthDay),
 	}
 	return userInfo
 }

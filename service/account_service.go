@@ -234,7 +234,7 @@ func (a *accountService) ChangePassword(ctx *gin.Context, oldPassword string, ne
 		return e.ErrMysql
 	}
 	//检验旧密码
-	if !utils.ComparePwd(oldPassword+user.Salt, user.Password) {
+	if !utils.ComparePwd(user.Password, oldPassword+user.Salt) {
 		return e.ErrUserNameOrPasswordWrong
 	}
 	password, getPwdErr := utils.GetPwd(newPassword + user.Salt)
