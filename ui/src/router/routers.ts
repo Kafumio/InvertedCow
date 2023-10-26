@@ -26,7 +26,7 @@ export const constantRoute = [
         path: '/account/setting',
         component: () => import('@/views/setting/index.vue'),
         name: 'accountSetting',
-      }
+      },
     ],
   },
 ];
