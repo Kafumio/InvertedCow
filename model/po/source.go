@@ -6,7 +6,7 @@ import (
 
 type Source struct {
 	gorm.Model
-	UID      string `gorm:"column:uid;comment:原动态 业务唯一标识" json:"uid"`
+	PostId   uint   `gorm:"column:post_id" json:"postId"`
 	FileName string `gorm:"column:file_name;comment:存储方标识" json:"file_name"`
 	Hash     string `gorm:"column:hash" json:"hash"`
 	Size     int64  `gorm:"column:size;comment:文件大小" json:"size"`

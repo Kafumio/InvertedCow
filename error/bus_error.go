@@ -38,3 +38,12 @@ var (
 	ErrUserTypeNotSupport            = NewError(CodeUserTypeNotSupport, "type not support", ErrTypeBus)
 	ErrUserInvalidToken              = NewError(CodeUserInvalidToken, "invalid token", ErrTypeBus)
 )
+
+/************Post错误**************/
+const (
+	CodePostNotExist = 11500 + iota // 用户名或密码错误
+)
+
+var (
+	ErrPostNotExist = NewError(CodePostNotExist, "The post does not exist", ErrTypeBus)
+)

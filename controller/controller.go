@@ -6,6 +6,7 @@ var ProviderSet = wire.NewSet(
 	NewController,
 	NewAccountController,
 	NewPostController,
+	NewViewController,
 )
 
 type Controller struct {

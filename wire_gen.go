@@ -7,14 +7,13 @@
 package main
 
 import (
-	"net/http"
-
 	"InvertedCow/config"
 	"InvertedCow/controller"
 	"InvertedCow/dao"
 	"InvertedCow/data"
 	"InvertedCow/router"
 	"InvertedCow/service"
+	"net/http"
 )
 
 // Injectors from wire.go:

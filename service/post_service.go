@@ -13,8 +13,8 @@ import (
 )
 
 type PostService interface {
-	Post(ctx context.Context, originText string, publisher int64, hasSource bool) (*dto.Token, error)
-	Upload(ctx context.Context, id, hash, key, bucket, uid string, fSize int64) error // 回调，主要是绑定业务属性
+	Post(ctx context.Context, originText string, publisher uint, hasSource bool) (*dto.Token, error)
+	Upload(ctx context.Context, id, hash, key, bucket string, uid uint, fSize int64) error // 回调，主要是绑定业务属性
 }
 
 type postService struct {
@@ -38,7 +38,7 @@ func NewPostService(config *conf.AppConfig,
 	}
 }
 
-func (p *postService) Post(ctx context.Context, originText string, userId int64, hasSource bool) (*dto.Token, error) {
+func (p *postService) Post(ctx context.Context, originText string, userId uint, hasSource bool) (*dto.Token, error) {
 	var err error
 	uid := utils.GetUUID()
 	post := &po.Post{
@@ -78,9 +78,9 @@ func (p *postService) Post(ctx context.Context, originText string, userId int64,
 // 2. 关联业务属性
 // 3. 返回响应
 // TODO: transaction
-func (p *postService) Upload(ctx context.Context, id, hash, key, bucket, uid string, fSize int64) error {
+func (p *postService) Upload(ctx context.Context, id, hash, key, bucket string, uid uint, fSize int64) error {
 	source := &po.Source{
-		UID:      uid, // origin_post_uid
+		PostId:   uid, // origin_post_uid
 		FileName: id,
 		Hash:     hash,
 		Size:     fSize,
@@ -92,7 +92,7 @@ func (p *postService) Upload(ctx context.Context, id, hash, key, bucket, uid str
 		// TODO: log
 		return err
 	}
-	post, err := p.pd.GetPostByUID(p.db, uid)
+	post, err := p.pd.GetPostByID(p.db, uid)
 	if err != nil {
 		return err
 	}

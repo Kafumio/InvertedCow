@@ -6,6 +6,7 @@ import (
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
+	"strconv"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func (p *postController) Post(ctx *gin.Context) {
 	if hasSourceRaw == "true" {
 		hasSource = true
 	}
-	token, err := p.postService.Post(ctx, originText, int64(userId), hasSource)
+	token, err := p.postService.Post(ctx, originText, userId, hasSource)
 	if err != nil {
 		// TODO: record and report
 		result.Error(e.ErrBadRequest)
@@ -56,7 +57,12 @@ func (p *postController) Upload(ctx *gin.Context) {
 		result.Error(e.ErrBadRequest)
 		return
 	}
-	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, source.Name, source.FSize)
+	uid, err := strconv.Atoi(source.Name)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, uint(uid), source.FSize)
 	if err != nil {
 		result.Error(e.ErrBadRequest)
 		return
