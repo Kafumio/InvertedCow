@@ -178,11 +178,7 @@ func (a *accountService) PasswordSignIn(account string, password string) (string
 		return "", e.ErrUserNameOrPasswordWrong
 	}
 	token, err := utils.GenerateToken(utils.Claims{
-		ID:        user.ID,
-		Avatar:    user.Avatar,
-		Username:  user.Username,
-		LoginName: user.LoginName,
-		Email:     user.Email,
+		ID: user.ID,
 	})
 	if err != nil {
 		return "", e.ErrUserUnknownError
@@ -199,7 +195,7 @@ func (a *accountService) EmailSignIn(email string, code string) (string, *e.Erro
 	if err != nil {
 		return "", e.ErrMysql
 	}
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return "", e.ErrUserNotExist
 	}
 	// 检测验证码
@@ -212,11 +208,7 @@ func (a *accountService) EmailSignIn(email string, code string) (string, *e.Erro
 		return "", e.ErrSignInCodeWrong
 	}
 	token, err := utils.GenerateToken(utils.Claims{
-		ID:        user.ID,
-		Avatar:    user.Avatar,
-		Username:  user.Username,
-		LoginName: user.LoginName,
-		Email:     user.Email,
+		ID: user.ID,
 	})
 	if err != nil {
 		return "", e.ErrUserUnknownError
@@ -228,7 +220,7 @@ func (a *accountService) ChangePassword(ctx *gin.Context, oldPassword string, ne
 	userInfo := ctx.Keys["user"].(*dto.UserInfo)
 	//检验用户名
 	user, err := a.userDao.GetUserByID(a.db, userInfo.ID)
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return e.ErrUserNotExist
 	}
 	if err != nil {
@@ -285,7 +277,7 @@ func (a *accountService) UploadAvatar(file *multipart.FileHeader) (string, *e.Er
 	if err != nil {
 		return "", e.ErrBadRequest
 	}
-	err = bucket.PutFile(path.Join(UserAvatarPath, fileName), file2)
+	err = bucket.PutFileSimple(path.Join(UserAvatarPath, fileName), file2)
 	if err != nil {
 		return "", e.ErrServer
 	}

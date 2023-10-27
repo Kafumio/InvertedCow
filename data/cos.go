@@ -48,7 +48,10 @@ func (c *Cos) NewImageBucket() *Bucket {
 }
 
 func (c *Cos) NewVideoBucket() *Bucket {
-	return c.NewBucket(c.cosConfig.VideoBucket, "", "", "", "")
+	return c.NewBucket(c.cosConfig.VideoBucket, "", c.cosConfig.UploadCallback,
+		// name 为 uid，唯一标识一条动态，需要客户端传入
+		`{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}`,
+		"application/json")
 }
 
 type Bucket struct {
@@ -58,8 +61,12 @@ type Bucket struct {
 	putPolicy storage.PutPolicy
 }
 
-// PutFile 上传文件，以数据流的形式
-func (b *Bucket) PutFile(key string, reader io.Reader) error {
+// PutFileSimple 上传文件，以数据流的形式
+func (b *Bucket) PutFileSimple(key string, reader io.Reader) error {
+	return b.PutFile(key, "", reader)
+}
+
+func (b *Bucket) PutFile(key, uid string, reader io.Reader) error {
 	// 生成上传屏障
 	upToken := b.putPolicy.UploadToken(b.mac)
 	cfg := storage.Config{}
@@ -73,7 +80,12 @@ func (b *Bucket) PutFile(key string, reader io.Reader) error {
 	cfg.UseCdnDomains = false
 	formUploader := storage.NewResumeUploaderV2(&cfg)
 	ret := storage.PutRet{}
-	putExtra := storage.RputV2Extra{}
+	var putExtra = storage.RputV2Extra{}
+	if len(uid) > 0 {
+		putExtra.CustomVars = map[string]string{
+			"x:name": uid,
+		}
+	}
 	total, err := GetReaderLen(reader)
 	if err != nil {
 		return err
@@ -124,6 +136,7 @@ func GetReaderLen(reader io.Reader) (length int64, err error) {
 }
 
 func (b *Bucket) Token() string {
+
 	return b.putPolicy.UploadToken(b.mac)
 }
 

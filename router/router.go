@@ -18,12 +18,14 @@ func SetupRouter(
 	// 允许跨域
 	r.Use(interceptor.Cors())
 	r.Use(interceptor.TokenAuthorize())
-	//设置静态文件位置
+	// 设置静态文件位置
 	r.Static("/static", "/")
 
-	//ping
+	// ping
 	r.GET("/ping", c.Ping)
 	SetupAccountRoutes(r, controller.AccountController)
+	// 动态相关
+	SetupPostRoutes(r, controller.PostController)
 
 	return r
 }

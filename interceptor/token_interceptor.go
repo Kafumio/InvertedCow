@@ -29,14 +29,11 @@ func TokenAuthorize() gin.HandlerFunc {
 		r := result2.NewResult(c)
 		token := c.Request.Header.Get("token")
 		claims, err := utils.ParseToken(token)
+		// TODO: 查询获取当前用户信息 userInfo / 或者放业务里再查
 		userInfo := &dto.UserInfo{
-			ID:        claims.ID,
-			Avatar:    claims.Avatar,
-			LoginName: claims.LoginName,
-			Username:  claims.Username,
-			Email:     claims.Email,
+			ID: claims.ID,
 		}
-		if err != nil || userInfo == nil {
+		if err != nil { // TODO: 失效
 			r.Error(e.ErrSessionInvalid)
 			c.Abort()
 			return

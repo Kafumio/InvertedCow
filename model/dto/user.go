@@ -7,20 +7,12 @@ import (
 
 // UserInfo token里面存储的数据
 type UserInfo struct {
-	ID        uint   `json:"id"`
-	Avatar    string `json:"avatar"`
-	LoginName string `json:"loginName"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
+	ID uint `json:"id"`
 }
 
 func NewUserInfo(user *po.User) *UserInfo {
 	userInfo := &UserInfo{
-		ID:        user.ID,
-		Avatar:    user.Avatar,
-		LoginName: user.LoginName,
-		Username:  user.Username,
-		Email:     user.Email,
+		ID: user.ID,
 	}
 	return userInfo
 }

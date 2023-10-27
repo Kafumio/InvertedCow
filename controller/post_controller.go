@@ -2,6 +2,7 @@ package controller
 
 import (
 	e "InvertedCow/error"
+	"InvertedCow/model/dto"
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,7 @@ import (
 
 type PostController interface {
 	Post(ctx *gin.Context)
+	Upload(ctx *gin.Context)
 }
 
 type postController struct {
@@ -25,17 +27,39 @@ func NewPostController(postService service.PostService) PostController {
 func (p *postController) Post(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
 	originText := ctx.PostForm("originText")
-	userId := int64(1)
+	user, ok := ctx.Get("user")
+	if !ok {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	userId := user.(*dto.UserInfo).ID
 	var hasSource bool
 	hasSourceRaw := strings.ToLower(ctx.PostForm("hasSource"))
 	if hasSourceRaw == "true" {
 		hasSource = true
 	}
-	token, err := p.postService.Post(ctx, originText, userId, hasSource)
+	token, err := p.postService.Post(ctx, originText, int64(userId), hasSource)
 	if err != nil {
 		// TODO: record and report
 		result.Error(e.ErrBadRequest)
 		return
 	}
 	result.SuccessData(token)
+}
+
+// Upload 提供给七牛云的回调，用于绑定业务属性
+func (p *postController) Upload(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	source := &dto.Source{}
+	err := ctx.ShouldBindJSON(source)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, source.Name, source.FSize)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	result.SuccessMessage("ok") // TODO
 }
