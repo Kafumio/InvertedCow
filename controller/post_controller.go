@@ -6,6 +6,7 @@ import (
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -41,7 +42,7 @@ func (p *postController) Post(ctx *gin.Context) {
 	}
 	token, err := p.postService.Post(ctx, text, userId, onlyText)
 	if err != nil {
-		// TODO: record and report
+		log.Println("Post service error", err)
 		result.Error(e.ErrBadRequest)
 		return
 	}
@@ -58,7 +59,12 @@ func (p *postController) Upload(ctx *gin.Context) {
 		return
 	}
 	// 数字转字符串
-	pid, _ := strconv.Atoi(source.PID)
+	pid, err := strconv.Atoi(source.PID)
+	if err != nil {
+		log.Println("Atoi error", err)
+		result.Error(e.ErrBadRequest)
+		return
+	}
 	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, uint(pid), source.FSize)
 	if err != nil {
 		result.Error(e.ErrBadRequest)

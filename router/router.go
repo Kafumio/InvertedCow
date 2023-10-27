@@ -26,6 +26,7 @@ func SetupRouter(
 	SetupAccountRoutes(r, controller.AccountController)
 	// 动态相关
 	SetupPostRoutes(r, controller.PostController)
+	SetupViewRoutes(r, controller.ViewController)
 
 	return r
 }
