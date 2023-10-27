@@ -9,11 +9,14 @@ import (
 	"context"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
+	"log"
+	"time"
 )
 
 type PostService interface {
 	Post(ctx context.Context, text string, publisher uint, onlyText bool) (*dto.Token, error)
 	Upload(ctx context.Context, id, hash, key, bucket string, pid uint, fSize int64) error // 回调，主要是绑定业务属性
+	Deprecated()
 }
 
 type postService struct {
@@ -62,7 +65,6 @@ func (p *postService) Post(ctx context.Context, text string, userId uint, onlyTe
 		return nil, err
 	}
 
-	// TODO: 时限监听 —— 连接 Token 时效，避免上传成功但动态发布失败。
 	bucket := p.cos.NewVideoBucket()
 
 	token := &dto.Token{
@@ -101,4 +103,53 @@ func (p *postService) Upload(ctx context.Context, id, hash, key, bucket string, 
 		return err
 	}
 	return nil
+}
+
+func (p *postService) Deprecated() {
+	ticker := time.NewTimer(2 * time.Second)
+	for {
+		<-ticker.C
+		list, err := p.pd.GetPostListWithoutPage(p.db, &po.Post{
+			State: 1,
+		})
+		if err != nil {
+			return
+		}
+		pIds := make([]uint, len(list))
+		for i := 0; i < len(list); i++ {
+			pIds[i] = list[i].ID
+		}
+		sources, err := p.sd.GetSourcesByPostIds(p.db, pIds)
+		if err != nil {
+			log.Println("deprecated error", err)
+			return
+		}
+		successIds := make(map[uint]struct{})
+		for i := 0; i < len(sources); i++ {
+			successIds[sources[i].PostID] = struct{}{}
+			post, err := p.pd.GetPostByID(p.db, sources[i].PostID)
+			if err != nil {
+				return
+			}
+			post.State = 2
+			err = p.pd.UpdatePost(p.db, post)
+			if err != nil {
+				return
+			}
+		}
+		for i := 0; i < len(list); i++ {
+			if _, ok := successIds[list[i].ID]; !ok {
+				// 更改为失败
+				post, err := p.pd.GetPostByID(p.db, sources[i].PostID)
+				if err != nil {
+					return
+				}
+				post.State = 3
+				err = p.pd.UpdatePost(p.db, post)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
 }

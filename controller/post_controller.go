@@ -9,6 +9,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type PostController interface {
@@ -16,11 +17,18 @@ type PostController interface {
 	Upload(ctx *gin.Context)
 }
 
+var (
+	once sync.Once
+)
+
 type postController struct {
 	postService service.PostService
 }
 
 func NewPostController(postService service.PostService) PostController {
+	once.Do(func() {
+		postService.Deprecated()
+	})
 	return &postController{
 		postService: postService,
 	}
