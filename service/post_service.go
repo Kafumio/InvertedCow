@@ -7,9 +7,11 @@ import (
 	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
 	"context"
+	"fmt"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -18,6 +20,10 @@ type PostService interface {
 	Upload(ctx context.Context, id, hash, key, bucket string, pid uint, fSize int64) error // 回调，主要是绑定业务属性
 	Deprecated()
 }
+
+var (
+	once sync.Once
+)
 
 type postService struct {
 	config *conf.AppConfig
@@ -30,7 +36,7 @@ type postService struct {
 
 func NewPostService(config *conf.AppConfig,
 	db *gorm.DB, cos *data.Cos, redis *redis.Client, pd dao.PostDao, sd dao.SourceDao) PostService {
-	return &postService{
+	post := &postService{
 		config: config,
 		db:     db,
 		cos:    cos,
@@ -38,6 +44,10 @@ func NewPostService(config *conf.AppConfig,
 		pd:     pd,
 		sd:     sd,
 	}
+	once.Do(func() {
+		go post.Deprecated()
+	})
+	return post
 }
 
 func (p *postService) Post(ctx context.Context, text string, userId uint, onlyText bool) (*dto.Token, error) {
@@ -109,6 +119,7 @@ func (p *postService) Deprecated() {
 	ticker := time.NewTimer(2 * time.Second)
 	for {
 		<-ticker.C
+		fmt.Println("ggg")
 		list, err := p.pd.GetPostListWithoutPage(p.db, &po.Post{
 			State: 1,
 		})
