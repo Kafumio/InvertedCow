@@ -49,7 +49,7 @@ func (c *Cos) NewImageBucket() *Bucket {
 
 func (c *Cos) NewVideoBucket() *Bucket {
 	return c.NewBucket(c.cosConfig.VideoBucket, "", c.cosConfig.UploadCallback,
-		// name 为 uid，唯一标识一条动态，需要客户端传入
+		// pid 唯一标识一条动态，需要客户端上传文件时传入
 		`{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","pid":"$(x:pid)"}`,
 		"application/json")
 }
@@ -136,7 +136,6 @@ func GetReaderLen(reader io.Reader) (length int64, err error) {
 }
 
 func (b *Bucket) Token() string {
-
 	return b.putPolicy.UploadToken(b.mac)
 }
 
