@@ -6,8 +6,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// PostDao
-// TODO: crud
 type PostDao interface {
 	InsertPost(db *gorm.DB, post *po.Post) error
 	UpdatePost(db *gorm.DB, post *po.Post) error
@@ -15,7 +13,8 @@ type PostDao interface {
 	GetPostCount(db *gorm.DB, post *po.Post) (int64, error)
 	// GetPostList 读取post列表
 	GetPostList(db *gorm.DB, pageQuery *dto.PageQuery) ([]*po.Post, error)
-	// GetPostByID
+	GetPostListWithoutPage(db *gorm.DB, post *po.Post) ([]*po.Post, error)
+	// GetPostByID 根据ID获取指定动态
 	GetPostByID(db *gorm.DB, postId uint) (*po.Post, error)
 }
 
@@ -63,7 +62,7 @@ func (p *postDao) GetPostList(db *gorm.DB, pageQuery *dto.PageQuery) ([]*po.Post
 		db = db.Where("state = ?", post.State)
 	}
 	if post != nil && post.Publisher != 0 {
-		db = db.Where("publisher LIKE ?", post.Publisher)
+		db = db.Where("publisher = ?", post.Publisher)
 	}
 	db = db.Limit(pageQuery.PageSize).Offset(offset)
 	if pageQuery.SortProperty != "" && pageQuery.SortRule != "" {
@@ -78,4 +77,14 @@ func (p *postDao) GetPostByID(db *gorm.DB, postId uint) (*po.Post, error) {
 	var post po.Post
 	err := db.Find(&post, postId).Error
 	return &post, err
+}
+
+func (p *postDao) GetPostListWithoutPage(db *gorm.DB, post *po.Post) ([]*po.Post, error) {
+	var posts []*po.Post
+	if post.State != 0 {
+		db = db.Where(`state = ?`, post.State)
+	}
+	db = db.Where(`created_at <= DATE_SUB(NOW(), INTERVAL 1 HOUR)`)
+	err := db.Find(&posts).Error
+	return posts, err
 }

@@ -49,8 +49,8 @@ func (c *Cos) NewImageBucket() *Bucket {
 
 func (c *Cos) NewVideoBucket() *Bucket {
 	return c.NewBucket(c.cosConfig.VideoBucket, "", c.cosConfig.UploadCallback,
-		// name 为 uid，唯一标识一条动态，需要客户端传入
-		`{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}`,
+		// pid 唯一标识一条动态，需要客户端上传文件时传入
+		`{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","pid":"$(x:pid)"}`,
 		"application/json")
 }
 
@@ -66,7 +66,7 @@ func (b *Bucket) PutFileSimple(key string, reader io.Reader) error {
 	return b.PutFile(key, "", reader)
 }
 
-func (b *Bucket) PutFile(key, uid string, reader io.Reader) error {
+func (b *Bucket) PutFile(key string, pid string, reader io.Reader) error {
 	// 生成上传屏障
 	upToken := b.putPolicy.UploadToken(b.mac)
 	cfg := storage.Config{}
@@ -81,9 +81,9 @@ func (b *Bucket) PutFile(key, uid string, reader io.Reader) error {
 	formUploader := storage.NewResumeUploaderV2(&cfg)
 	ret := storage.PutRet{}
 	var putExtra = storage.RputV2Extra{}
-	if len(uid) > 0 {
+	if len(pid) > 0 {
 		putExtra.CustomVars = map[string]string{
-			"x:name": uid,
+			"x:pid": pid,
 		}
 	}
 	total, err := GetReaderLen(reader)
@@ -136,7 +136,6 @@ func GetReaderLen(reader io.Reader) (length int64, err error) {
 }
 
 func (b *Bucket) Token() string {
-
 	return b.putPolicy.UploadToken(b.mac)
 }
 
