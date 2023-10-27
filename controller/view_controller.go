@@ -50,7 +50,7 @@ func (v *viewController) PrePost(ctx *gin.Context) {
 
 func (v *viewController) GetPostById(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	postIdStr := ctx.PostForm("postId")
+	postIdStr := ctx.Param("postId")
 	postId, err := strconv.Atoi(postIdStr)
 	if err != nil {
 		result.Error(e.ErrBadRequest)
