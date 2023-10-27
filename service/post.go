@@ -39,10 +39,9 @@ func (p *postService) Post(ctx context.Context, originText string, userId int64,
 	var err error
 	uid := utils.GetUUID()
 	post := &po.Post{
-		OriginUrl:  uid, // TODO, generate
-		State:      1,
-		Publisher:  userId,
-		OriginText: originText,
+		State:     1,
+		Publisher: userId,
+		Text:      originText,
 	}
 	if !hasSource {
 		post.State = 2

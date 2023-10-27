@@ -51,7 +51,7 @@
     username: '',
     introduction: '',
     sex: '',
-    birthDay: new Date(),
+    birthDay: '',
   });
   let baseSettingVisible = ref(false);
   let changePasswordVisible = ref(false);
@@ -65,7 +65,7 @@
         account.username = result.data.username;
         account.introduction = result.data.introduction;
         account.sex = result.data.sex;
-        account.birthDay = new Date(result.data.birthDay);
+        account.birthDay = result.data.birthDay;
       }
     } catch (err) {
       ElMessage({

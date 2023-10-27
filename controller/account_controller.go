@@ -22,10 +22,10 @@ type AccountController interface {
 	GetAccountInfo(ctx *gin.Context)
 	// UploadAvatar 上传头像
 	UploadAvatar(ctx *gin.Context)
-	// ChangePassword 修改用户密码
-	ChangePassword(ctx *gin.Context)
 	// UpdateAccount 更新账号信息
 	UpdateAccount(ctx *gin.Context)
+	// ChangePassword 修改用户密码
+	ChangePassword(ctx *gin.Context)
 }
 
 type accountController struct {

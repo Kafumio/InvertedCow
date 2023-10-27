@@ -15,10 +15,10 @@ import "gorm.io/gorm"
 // Post 动态
 type Post struct {
 	gorm.Model
-	OriginUrl  string `gorm:"column:origin_url;comment:唯一标识，用作地址链接" json:"origin_url"` // 动态原始地址, 接一个唯一 随机 UID
-	State      int    `gorm:"column:state;comment:1发布中 2发布成功 3发布失败" json:"state"`
-	Publisher  int64  `gorm:"column:publisher;comment:发布者" json:"publisher"`        // 发布者
-	OriginText string `gorm:"column:origin_text;comment:原始动态内容" json:"origin_text"` // 原始动态内容，后期可能做转义处理
+	State     int    `gorm:"column:state;comment:1发布中 2发布成功 3发布失败" json:"state"`
+	Publisher int64  `gorm:"column:publisher;comment:发布者" json:"publisher"` // 发布者
+	Text      string `gorm:"column:text;comment:原始动态内容" json:"text"`     // 原始动态内容，后期可能做转义处理
+	Source    Source // 资源
 	// TODO: tags, like, star, forward
 	// other list
 }
