@@ -6,11 +6,10 @@ type Source struct {
 	Hash   string `json:"hash"`
 	FSize  int64  `json:"fsize"`
 	Bucket string `json:"bucket"`
-	Name   string `json:"name"`
+	PID    string `json:"pid"`
 }
 
 type Token struct {
-	Token       string `json:"token"`
-	OriginUrl   string `json:"origin_id"`    // 关联发布动态id
-	CallbackUrl string `json:"callback_url"` // 回调
+	Token string `json:"token"`
+	PID   uint   `json:"pid"` // 关联发布动态id
 }

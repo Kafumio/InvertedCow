@@ -16,7 +16,7 @@ import "gorm.io/gorm"
 type Post struct {
 	gorm.Model
 	State     int    `gorm:"column:state;comment:1发布中 2发布成功 3发布失败" json:"state"`
-	Publisher int64  `gorm:"column:publisher;comment:发布者" json:"publisher"` // 发布者
+	Publisher uint   `gorm:"column:publisher;comment:发布者" json:"publisher"` // 发布者
 	Text      string `gorm:"column:text;comment:原始动态内容" json:"text"`        // 原始动态内容，后期可能做转义处理
 	Source    Source // 资源
 	// TODO: tags, like, star, forward
