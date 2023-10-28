@@ -3,6 +3,7 @@ package service
 import (
 	conf "InvertedCow/config"
 	"InvertedCow/dao"
+	"InvertedCow/data"
 	e "InvertedCow/error"
 	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
@@ -11,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
+	"mime/multipart"
+	"path"
 	"time"
 )
 
@@ -30,6 +33,8 @@ type AccountService interface {
 	PasswordSignIn(account string, password string) (string, *e.Error)
 	// EmailSignIn 邮件登录
 	EmailSignIn(email string, code string) (string, *e.Error)
+	// UploadAvatar 上传头像
+	UploadAvatar(file *multipart.FileHeader) (string, *e.Error)
 	// GetAccountInfo 读取账号信息
 	GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.Error)
 	// ChangePassword 修改用户密码
@@ -42,15 +47,17 @@ type accountService struct {
 	config  *conf.AppConfig
 	db      *gorm.DB
 	redis   *redis.Client
+	cos     *data.Cos
 	userDao dao.UserDao
 }
 
 func NewAccountService(config *conf.AppConfig,
-	db *gorm.DB, redis *redis.Client, userDao dao.UserDao) AccountService {
+	db *gorm.DB, redis *redis.Client, cos *data.Cos, userDao dao.UserDao) AccountService {
 	return &accountService{
 		config:  config,
 		db:      db,
 		redis:   redis,
+		cos:     cos,
 		userDao: userDao,
 	}
 }
@@ -227,7 +234,7 @@ func (a *accountService) ChangePassword(ctx *gin.Context, oldPassword string, ne
 		return e.ErrMysql
 	}
 	//检验旧密码
-	if !utils.ComparePwd(oldPassword+user.Salt, user.Password) {
+	if !utils.ComparePwd(user.Password, oldPassword+user.Salt) {
 		return e.ErrUserNameOrPasswordWrong
 	}
 	password, getPwdErr := utils.GetPwd(newPassword + user.Salt)
@@ -262,4 +269,24 @@ func (a *accountService) GetAccountInfo(ctx *gin.Context) (*dto.AccountInfo, *e.
 		return nil, e.ErrUserNotExist
 	}
 	return dto.NewAccountInfo(userInfo), nil
+}
+
+const (
+	// UserAvatarPath cos中，用户图片存储的位置
+	UserAvatarPath = "/avatar/user"
+)
+
+func (a *accountService) UploadAvatar(file *multipart.FileHeader) (string, *e.Error) {
+	bucket := a.cos.NewImageBucket()
+	fileName := file.Filename
+	fileName = utils.GetUUID() + "." + path.Base(fileName)
+	file2, err := file.Open()
+	if err != nil {
+		return "", e.ErrBadRequest
+	}
+	err = bucket.PutFile(path.Join(UserAvatarPath, fileName), file2)
+	if err != nil {
+		return "", e.ErrServer
+	}
+	return bucket.MakeUrl(a.config.ImageProUrl, path.Join(UserAvatarPath, fileName)), nil
 }

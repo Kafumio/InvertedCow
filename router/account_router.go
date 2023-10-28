@@ -14,5 +14,6 @@ func SetupAccountRoutes(r *gin.Engine, accountController controller.AccountContr
 		account.GET("/get/info", accountController.GetAccountInfo)
 		account.PUT("/password", accountController.ChangePassword)
 		account.PUT("", accountController.UpdateAccount)
+		account.POST("/avatar/upload", accountController.UploadAvatar)
 	}
 }

@@ -21,8 +21,9 @@ import (
 func initApp(appConfig *config.AppConfig) (*http.Server, error) {
 	db := data.NewGormClient(appConfig)
 	client := data.NewRedisClient(appConfig)
+	cos := data.NewCos(appConfig)
 	userDao := dao.NewUserDao()
-	accountService := service.NewAccountService(appConfig, db, client, userDao)
+	accountService := service.NewAccountService(appConfig, db, client, cos, userDao)
 	accountController := controller.NewAccountController(accountService)
 	relationService := service.NewRelationService(db, client, userDao)
 	relationController := controller.NewRelationController(relationService)

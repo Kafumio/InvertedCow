@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { defineStore } from 'pinia';
-import { reqSignIn, reqUserInfo } from '@/api/account';
+import { reqSignIn, reqAccountInfo } from '@/api/account';
 
 const useUserStore = defineStore('User', {
   state: (): any => {
@@ -26,7 +26,7 @@ const useUserStore = defineStore('User', {
       }
     },
     async userInfo() {
-      const result = await reqUserInfo();
+      const result = await reqAccountInfo();
       if (result.code == 200) {
         this.username = result.data.username;
         this.email = result.data.email;

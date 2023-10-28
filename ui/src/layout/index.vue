@@ -20,6 +20,7 @@
 .layout-container {
   width: 100vw;
   height: 100vh;
+  position: fixed;
   .layout-main {
     position: relative;
     top: $base-header-height;
