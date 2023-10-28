@@ -23,6 +23,9 @@ func NewGormClient(conf *config.AppConfig) *gorm.DB {
 	// 模型绑定
 	err = db.AutoMigrate(
 		po.User{},
+		po.Post{},
+		po.SourceOrder{},
+		po.Source{},
 	)
 	if err != nil {
 		log.Println(err)

@@ -26,6 +26,8 @@ func SetupRouter(
 	SetupAccountRoutes(r, controller.AccountController)
 	// 动态相关
 	SetupPostRoutes(r, controller.PostController)
+	// 观看视频相关
+	SetupViewRoutes(r, controller.ViewController)
 
 	return r
 }
