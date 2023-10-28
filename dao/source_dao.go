@@ -5,12 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// SourceDao
-// TODO: crud
 type SourceDao interface {
 	InsertSource(db *gorm.DB, Source *po.Source) error
 	GetSourceById(db *gorm.DB, sourceId uint) (*po.Source, error)
 	GetSourceByPostId(db *gorm.DB, postId uint) (*po.Source, error)
+	GetSourcesByPostIds(db *gorm.DB, postIds []uint) ([]*po.Source, error)
 }
 
 type sourceDao struct {
@@ -43,4 +42,13 @@ func (s *sourceDao) GetSourceByPostId(db *gorm.DB, postId uint) (*po.Source, err
 		return nil, gorm.ErrRecordNotFound
 	}
 	return &source, nil
+}
+
+func (s *sourceDao) GetSourcesByPostIds(db *gorm.DB, postIds []uint) ([]*po.Source, error) {
+	var sources []*po.Source
+	err := db.Where("post_id IN (?)", postIds).Find(&sources).Error
+	if err != nil {
+		return nil, err
+	}
+	return sources, nil
 }

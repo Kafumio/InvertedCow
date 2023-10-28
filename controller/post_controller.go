@@ -6,6 +6,7 @@ import (
 	"InvertedCow/model/vo"
 	"InvertedCow/service"
 	"github.com/gin-gonic/gin"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -27,21 +28,21 @@ func NewPostController(postService service.PostService) PostController {
 
 func (p *postController) Post(ctx *gin.Context) {
 	result := vo.NewResult(ctx)
-	originText := ctx.PostForm("originText")
+	text := ctx.PostForm("text")
 	user, ok := ctx.Get("user")
 	if !ok {
 		result.Error(e.ErrBadRequest)
 		return
 	}
 	userId := user.(*dto.UserInfo).ID
-	var hasSource bool
-	hasSourceRaw := strings.ToLower(ctx.PostForm("hasSource"))
-	if hasSourceRaw == "true" {
-		hasSource = true
+	var onlyText bool
+	onlyTextRaw := strings.ToLower(ctx.PostForm("onlyText"))
+	if onlyTextRaw == "true" {
+		onlyText = true
 	}
-	token, err := p.postService.Post(ctx, originText, userId, hasSource)
+	token, err := p.postService.Post(ctx, text, userId, onlyText)
 	if err != nil {
-		// TODO: record and report
+		log.Println("Post service error", err)
 		result.Error(e.ErrBadRequest)
 		return
 	}
@@ -57,12 +58,14 @@ func (p *postController) Upload(ctx *gin.Context) {
 		result.Error(e.ErrBadRequest)
 		return
 	}
-	uid, err := strconv.Atoi(source.Name)
+	// 数字转字符串
+	pid, err := strconv.Atoi(source.PID)
 	if err != nil {
+		log.Println("Atoi error", err)
 		result.Error(e.ErrBadRequest)
 		return
 	}
-	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, uint(uid), source.FSize)
+	err = p.postService.Upload(ctx, source.Id, source.Hash, source.Key, source.Bucket, uint(pid), source.FSize)
 	if err != nil {
 		result.Error(e.ErrBadRequest)
 		return
