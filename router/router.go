@@ -28,6 +28,8 @@ func SetupRouter(
 	SetupPostRoutes(r, controller.PostController)
 	// 观看视频相关
 	SetupViewRoutes(r, controller.ViewController)
+	// follow相关
+	SetupRelationRoutes(r, controller.RelationController)
 
 	return r
 }
