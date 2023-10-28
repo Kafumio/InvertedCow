@@ -24,6 +24,7 @@ func NewGormClient(conf *config.AppConfig) *gorm.DB {
 	err = db.AutoMigrate(
 		po.User{},
 		po.Post{},
+
 		po.Source{},
 	)
 	if err != nil {
