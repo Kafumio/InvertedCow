@@ -5,16 +5,20 @@ import "github.com/google/wire"
 var ProviderSet = wire.NewSet(
 	NewController,
 	NewAccountController,
+	NewRelationController,
 )
 
 type Controller struct {
-	AccountController AccountController
+	AccountController  AccountController
+	RelationController RelationController
 }
 
 func NewController(
 	accountController AccountController,
+	relationController RelationController,
 ) *Controller {
 	return &Controller{
-		AccountController: accountController,
+		AccountController:  accountController,
+		RelationController: relationController,
 	}
 }

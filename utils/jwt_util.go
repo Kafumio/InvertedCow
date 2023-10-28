@@ -11,14 +11,16 @@ const (
 )
 
 type Claims struct {
-	ID        uint     `json:"id"`
-	Avatar    string   `json:"avatar"`
-	Username  string   `json:"username"`
-	LoginName string   `json:"loginName"`
-	Phone     string   `json:"phone"`
-	Email     string   `json:"email"`
-	Roles     []uint   `json:"roles"`
-	Menus     []string `json:"menus"`
+	ID            uint     `json:"id"`
+	Avatar        string   `json:"avatar"`
+	Username      string   `json:"username"`
+	LoginName     string   `json:"loginName"`
+	Phone         string   `json:"phone"`
+	Email         string   `json:"email"`
+	FollowCount   int      `json:"followCount"`
+	FollowerCount int      `json:"followerCount"`
+	Roles         []uint   `json:"roles"`
+	Menus         []string `json:"menus"`
 	jwt.StandardClaims
 }
 

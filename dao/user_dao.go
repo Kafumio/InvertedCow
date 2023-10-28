@@ -23,6 +23,14 @@ type UserDao interface {
 	CheckEmail(db *gorm.DB, email string) (bool, error)
 	// CheckLoginName 检测loginname是否存在
 	CheckLoginName(db *gorm.DB, loginname string) (bool, error)
+	// AddUserFollow 用户关注，增加用户关注数以及被关注对象粉丝数
+	AddUserFollow(db *gorm.DB, userId, userToId uint) error
+	// CancelUserFollow 取消关注，减少用户关注数以及被关注对象粉丝数
+	CancelUserFollow(db *gorm.DB, userId, userToId uint) error
+	// GetFollowListByUserId 根据用户Id获取用户的关注列表
+	GetFollowListByUserId(db *gorm.DB, userId uint) (followList []*po.User, err error)
+	// GetFollowerListByUserId 根据用户Id获取用户的粉丝列表
+	GetFollowerListByUserId(db *gorm.DB, userId uint) (followerList []*po.User, err error)
 }
 
 type userDao struct {
@@ -84,4 +92,50 @@ func (s *userDao) CheckLoginName(db *gorm.DB, loginname string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (s *userDao) AddUserFollow(db *gorm.DB, userId, userToId uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("UPDATE users SET follow_count=follow_count+1 WHERE id = ?", userId).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("UPDATE users SET follower_count=follower_count+1 WHERE id = ?", userToId).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("INSERT INTO `user_relations` (`user_id`,`follow_id`) VALUES (?,?)", userId, userToId).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (s *userDao) CancelUserFollow(db *gorm.DB, userId, userToId uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("UPDATE users SET follow_count=follow_count-1 WHERE id = ?", userId).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("UPDATE users SET follower_count=follower_count-1 WHERE id = ?", userToId).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("DELETE FROM `user_relations` WHERE user_id = ? AND follow_id = ?", userId, userToId).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (s *userDao) GetFollowListByUserId(db *gorm.DB, userId uint) (followList []*po.User, err error) {
+	followList = []*po.User{}
+	if err = db.Raw("SELECT u.* FROM user_relations r, users u WHERE r.user_id = ? AND r.follow_id = u.id", userId).Scan(&followList).Error; err != nil {
+		return followList, err
+	}
+	return followList, nil
+}
+
+func (s *userDao) GetFollowerListByUserId(db *gorm.DB, userId uint) (followerList []*po.User, err error) {
+	followerList = []*po.User{}
+	if err = db.Raw("SELECT u.* FROM user_relations r, users u WHERE r.follow_id = ? AND r.user_id = u.id", userId).Scan(followerList).Error; err != nil {
+		return followerList, err
+	}
+	return followerList, nil
 }

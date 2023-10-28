@@ -25,7 +25,9 @@ func initApp(appConfig *config.AppConfig) (*http.Server, error) {
 	userDao := dao.NewUserDao()
 	accountService := service.NewAccountService(appConfig, db, client, cos, userDao)
 	accountController := controller.NewAccountController(accountService)
-	controllerController := controller.NewController(accountController)
+	relationService := service.NewRelationService(db, client, userDao)
+	relationController := controller.NewRelationController(relationService)
+	controllerController := controller.NewController(accountController, relationController)
 	engine := router.SetupRouter(controllerController)
 	server := newApp(engine, appConfig)
 	return server, nil

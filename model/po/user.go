@@ -15,6 +15,11 @@ type User struct {
 	Email        string `gorm:"column:email" json:"email"`
 	Introduction string `gorm:"column:introduction" json:"introduction"`
 	// 1表示男 2表示女
-	Sex      int       `gorm:"column:sex" json:"sex"`
-	BirthDay time.Time `gorm:"column:birth_day" json:"birthDay"`
+	Sex           int       `gorm:"column:sex" json:"sex"`
+	BirthDay      time.Time `gorm:"column:birth_day" json:"birthDay"`
+	FollowCount   int       `gorm:"column:follow_count" json:"followCount"`
+	FollowerCount int       `gorm:"column:follower_count" json:"followerCount"`
+	IsFollow      bool      `gorm:"-" json:"isFollow"`
+	IsFollower    bool      `gorm:"-" json:"isFollower"`
+	Follows       []*User   `json:"-" gorm:"many2many:user_relations;"` //用户之间的多对多
 }
