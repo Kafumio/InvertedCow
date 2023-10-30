@@ -122,13 +122,20 @@ func (v *viewService) GetPostById(ctx *gin.Context, postId uint) (*dto.PostDtoFo
 
 func (v *viewService) LikePost(ctx *gin.Context, postId uint) *e.Error {
 	userInfo := ctx.Keys["user"].(*dto.UserInfo)
-	err := v.db.Transaction(func(tx *gorm.DB) error {
-		err := v.postDao.AddLikedUser(tx, userInfo.ID, postId)
-		if err != nil {
-			return err
+	isLikedUser, err := v.postDao.IsLikedUser(v.db, postId, userInfo.ID)
+	if err != nil {
+		return e.ErrMysql
+	}
+	if isLikedUser {
+		return nil
+	}
+	err = v.db.Transaction(func(tx *gorm.DB) error {
+		err2 := v.postDao.AddLikedUser(tx, userInfo.ID, postId)
+		if err2 != nil {
+			return err2
 		}
-		err = v.postDao.IncreaseLikedCount(tx, postId, 1)
-		return err
+		err2 = v.postDao.IncreaseLikedCount(tx, postId, 1)
+		return err2
 	})
 	if err != nil {
 		return e.ErrMysql
