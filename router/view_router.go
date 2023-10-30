@@ -11,5 +11,6 @@ func SetupViewRoutes(r *gin.Engine, viewController controller.ViewController) {
 		view.GET("/:postId", viewController.GetPostById)
 		view.GET("/next", viewController.NextPost)
 		view.GET("/pre", viewController.PrePost)
+		view.POST("/like", viewController.LikePost)
 	}
 }

@@ -15,10 +15,11 @@ import "gorm.io/gorm"
 // Post 动态
 type Post struct {
 	gorm.Model
-	State     int    `gorm:"column:state;comment:1发布中 2发布成功 3发布失败" json:"state"`
-	Publisher uint   `gorm:"column:publisher;comment:发布者" json:"publisher"` // 发布者
-	Text      string `gorm:"column:text;comment:原始动态内容" json:"text"`        // 原始动态内容，后期可能做转义处理
-	Source    Source // 资源
+	State      int     `gorm:"column:state;comment:1发布中 2发布成功 3发布失败" json:"state"`
+	Publisher  uint    `gorm:"column:publisher;comment:发布者" json:"publisher"` // 发布者
+	Text       string  `gorm:"column:text;comment:原始动态内容" json:"text"`        // 原始动态内容，后期可能做转义处理
+	LikedUsers []*User `gorm:"many2many:post_liked"`                          // 点赞的用户
+	LikedCount int     `gorm:"column:liked_count" json:"likeCount"`           // 点赞注数量
 	// TODO: tags, like, star, forward
 	// other list
 }

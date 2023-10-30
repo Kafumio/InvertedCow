@@ -3,6 +3,7 @@ package dao
 import (
 	"InvertedCow/model/dto"
 	"InvertedCow/model/po"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,12 @@ type PostDao interface {
 	GetPostListWithoutPage(db *gorm.DB, post *po.Post) ([]*po.Post, error)
 	// GetPostByID 根据ID获取指定动态
 	GetPostByID(db *gorm.DB, postId uint) (*po.Post, error)
+	// AddLikedUser 给一个post添加关注的用户
+	AddLikedUser(db *gorm.DB, postId uint, userId uint) error
+	// IncreaseLikedCount 动态点赞数+count
+	IncreaseLikedCount(db *gorm.DB, postId uint, count uint) error
+	// IsLikedUser 判断用户是否给视频点赞
+	IsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error)
 }
 
 type postDao struct {
@@ -87,4 +94,26 @@ func (p *postDao) GetPostListWithoutPage(db *gorm.DB, post *po.Post) ([]*po.Post
 	db = db.Where(`created_at <= DATE_SUB(NOW(), INTERVAL 1 HOUR)`)
 	err := db.Find(&posts).Error
 	return posts, err
+}
+
+func (p *postDao) AddLikedUser(db *gorm.DB, postId uint, userId uint) error {
+	err := db.Table("post_liked").
+		Create(map[string]interface{}{"post_id": postId, "user_id": userId}).Error
+	return err
+}
+
+func (p *postDao) IncreaseLikedCount(db *gorm.DB, postId uint, count uint) error {
+	err := db.Model(&po.Post{}).Where("id = ?", postId).
+		UpdateColumn("liked_count ", gorm.Expr("liked_count + ?", count)).Error
+	return err
+}
+
+func (p *postDao) IsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error) {
+	var t map[string]interface{}
+	err := db.Table("post_liked").
+		Where("post_id = ? AND user_id = ?", postId, userId).Scan(t).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return true, err
 }

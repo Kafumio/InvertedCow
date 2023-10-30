@@ -31,6 +31,8 @@ type UserDao interface {
 	GetFollowListByUserId(db *gorm.DB, userId uint) (followList []*po.User, err error)
 	// GetFollowerListByUserId 根据用户Id获取用户的粉丝列表
 	GetFollowerListByUserId(db *gorm.DB, userId uint) (followerList []*po.User, err error)
+	// CheckIsFollowed 判断用户是否被某人关注
+	CheckIsFollowed(db *gorm.DB, userId uint, followerId uint) (bool, error)
 }
 
 type userDao struct {
@@ -138,4 +140,13 @@ func (s *userDao) GetFollowerListByUserId(db *gorm.DB, userId uint) (followerLis
 		return followerList, err
 	}
 	return followerList, nil
+}
+
+func (u *userDao) CheckIsFollowed(db *gorm.DB, userId uint, followerId uint) (bool, error) {
+	var t map[string]interface{}
+	err := db.Raw("SELECT * FROM user_relations WHERE user_id = ? AND follow_id = ?", userId, followerId).Scan(t).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return true, err
 }

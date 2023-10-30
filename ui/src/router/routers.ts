@@ -29,9 +29,9 @@ export const constantRoute = [
       },
       {
         path: '/post/view',
-        component: () => import('@/views/setting/index.vue'),
+        component: () => import('@/views/view/index.vue'),
         name: 'view',
-      }
+      },
     ],
   },
 ];
