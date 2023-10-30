@@ -21,8 +21,8 @@ type PostDao interface {
 	AddLikedUser(db *gorm.DB, postId uint, userId uint) error
 	// IncreaseLikedCount 动态点赞数+count
 	IncreaseLikedCount(db *gorm.DB, postId uint, count uint) error
-	// IsLikedUser 判断用户是否给视频点赞
-	IsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error)
+	// CheckIsLikedUser 判断用户是否给视频点赞
+	CheckIsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error)
 }
 
 type postDao struct {
@@ -108,11 +108,11 @@ func (p *postDao) IncreaseLikedCount(db *gorm.DB, postId uint, count uint) error
 	return err
 }
 
-func (p *postDao) IsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error) {
+func (p *postDao) CheckIsLikedUser(db *gorm.DB, postId uint, userId uint) (bool, error) {
 	var t map[string]interface{}
 	err := db.Table("post_liked").
 		Where("post_id = ? AND user_id = ?", postId, userId).Scan(t).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if errors.Is(err, gorm.ErrRecordNotFound) || err != nil && t == nil {
 		return false, nil
 	}
 	return true, err

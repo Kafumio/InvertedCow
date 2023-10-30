@@ -112,7 +112,7 @@ func (v *viewService) GetPostById(ctx *gin.Context, postId uint) (*dto.PostDtoFo
 	}
 	sourceDto.IsFollowed = isFollowed
 	// 获取点赞信息
-	isLiked, err := v.postDao.IsLikedUser(v.db, postId, userInfo.ID)
+	isLiked, err := v.postDao.CheckIsLikedUser(v.db, postId, userInfo.ID)
 	if err != nil {
 		return nil, e.ErrMysql
 	}
@@ -122,7 +122,7 @@ func (v *viewService) GetPostById(ctx *gin.Context, postId uint) (*dto.PostDtoFo
 
 func (v *viewService) LikePost(ctx *gin.Context, postId uint) *e.Error {
 	userInfo := ctx.Keys["user"].(*dto.UserInfo)
-	isLikedUser, err := v.postDao.IsLikedUser(v.db, postId, userInfo.ID)
+	isLikedUser, err := v.postDao.CheckIsLikedUser(v.db, postId, userInfo.ID)
 	if err != nil {
 		return e.ErrMysql
 	}
