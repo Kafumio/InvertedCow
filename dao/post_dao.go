@@ -112,7 +112,7 @@ func (p *postDao) CheckIsLikedUser(db *gorm.DB, postId uint, userId uint) (bool,
 	var t map[string]interface{}
 	err := db.Table("post_liked").
 		Where("post_id = ? AND user_id = ?", postId, userId).Scan(t).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) || err != nil && t == nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) || err == nil && t == nil {
 		return false, nil
 	}
 	return true, err

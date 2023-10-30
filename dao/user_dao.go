@@ -145,7 +145,7 @@ func (s *userDao) GetFollowerListByUserId(db *gorm.DB, userId uint) (followerLis
 func (u *userDao) CheckIsFollowed(db *gorm.DB, userId uint, followerId uint) (bool, error) {
 	var t map[string]interface{}
 	err := db.Raw("SELECT * FROM user_relations WHERE user_id = ? AND follow_id = ?", userId, followerId).Scan(t).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) || err != nil && t == nil {
+	if errors.Is(err, gorm.ErrRecordNotFound) || err == nil && t == nil {
 		return false, nil
 	}
 	return true, err
