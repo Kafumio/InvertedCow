@@ -12,12 +12,15 @@ type PostDtoForView struct {
 	Publisher uint `json:"publisher"`
 	// PublisherAvatar 发布者头像
 	PublisherAvatar string `json:"publisherAvatar"`
+	// CommentNum 评论数
+	CommentNum int `json:"commentNum"`
 }
 
 func NewPostDtoForView(post *po.Post) *PostDtoForView {
 	return &PostDtoForView{
-		ID:        post.ID,
-		Text:      post.Text,
-		Publisher: post.Publisher,
+		ID:         post.ID,
+		Text:       post.Text,
+		Publisher:  post.Publisher,
+		CommentNum: post.CommentNum,
 	}
 }

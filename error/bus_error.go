@@ -22,6 +22,8 @@ const (
 	CodeUserUnknownError              // 用户服务未知错误
 	CodeAddFollowFailed               // 用户关注失败
 	CodeCancelFollowFailed            // 用户取消关注失败
+	CodeAddCommentFailed              // 用户评论失败
+	CodeDeleteCommentFailed           // 用户删除评论失败
 )
 
 var (
@@ -41,6 +43,8 @@ var (
 	ErrUserInvalidToken              = NewError(CodeUserInvalidToken, "invalid token", ErrTypeBus)
 	ErrAddFollowFailed               = NewError(CodeAddFollowFailed, "add follow failed", ErrTypeBus)
 	ErrCancelFollowFailed            = NewError(CodeCancelFollowFailed, "cancel follow failed", ErrTypeBus)
+	ErrAddCommentFailed              = NewError(CodeAddCommentFailed, "add comment failed", ErrTypeBus)
+	ErrDeleteCommentFailed           = NewError(CodeDeleteCommentFailed, "delte comment failed", ErrTypeBus)
 )
 
 /************Post错误**************/

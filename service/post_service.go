@@ -53,9 +53,10 @@ func NewPostService(config *conf.AppConfig,
 func (p *postService) Post(ctx context.Context, text string, userId uint, onlyText bool) (*dto.Token, error) {
 	var err error
 	post := &po.Post{
-		State:     1,
-		Publisher: userId,
-		Text:      text,
+		State:      1,
+		Publisher:  userId,
+		Text:       text,
+		CommentNum: 0,
 	}
 	// 单纯文字，目前不存在这种情况，只是便于测试
 	if onlyText {

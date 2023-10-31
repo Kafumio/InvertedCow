@@ -6,4 +6,5 @@ var ProviderSet = wire.NewSet(
 	NewUserDao,
 	NewPostDao,
 	NewSourceDao,
+	NewCommentDao,
 )

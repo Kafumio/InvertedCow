@@ -8,6 +8,7 @@ var ProviderSet = wire.NewSet(
 	NewPostController,
 	NewViewController,
 	NewRelationController,
+	NewCommentController,
 )
 
 type Controller struct {
@@ -15,6 +16,7 @@ type Controller struct {
 	PostController     PostController
 	ViewController     ViewController
 	RelationController RelationController
+	CommentController  CommentController
 }
 
 func NewController(
@@ -22,11 +24,13 @@ func NewController(
 	postController PostController,
 	viewController ViewController,
 	relationController RelationController,
+	commentController CommentController,
 ) *Controller {
 	return &Controller{
 		AccountController:  accountController,
 		PostController:     postController,
 		ViewController:     viewController,
 		RelationController: relationController,
+		CommentController:  commentController,
 	}
 }

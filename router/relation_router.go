@@ -8,8 +8,8 @@ import (
 func SetupRelationRoutes(r *gin.Engine, relationController controller.RelationController) {
 	account := r.Group("/relation")
 	{
-		account.POST("/addFollow", relationController.AddFollow)
-		account.POST("/cancelFollow", relationController.CancelFollow)
+		account.POST("/add", relationController.AddFollow)
+		account.POST("/cancel", relationController.CancelFollow)
 		account.GET("/followList", relationController.GetFollowerList)
 		account.GET("/followerList", relationController.GetFollowerList)
 	}

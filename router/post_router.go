@@ -6,9 +6,9 @@ import (
 )
 
 func SetupPostRoutes(r *gin.Engine, postController controller.PostController) {
-	account := r.Group("/post")
+	post := r.Group("/post")
 	{
-		account.POST("/", postController.Post)
-		account.POST("/upload", postController.Upload)
+		post.POST("/", postController.Post)
+		post.POST("/upload", postController.Upload)
 	}
 }

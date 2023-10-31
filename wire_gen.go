@@ -33,7 +33,10 @@ func initApp(appConfig *config.AppConfig) (*http.Server, error) {
 	viewController := controller.NewViewController(viewService)
 	relationService := service.NewRelationService(db, client, userDao)
 	relationController := controller.NewRelationController(relationService)
-	controllerController := controller.NewController(accountController, postController, viewController, relationController)
+	commentDao := dao.NewCommentDao()
+	commentService := service.NewCommentService(db, cos, client, commentDao, userDao, postDao)
+	commentController := controller.NewCommentController(commentService)
+	controllerController := controller.NewController(accountController, postController, viewController, relationController, commentController)
 	engine := router.SetupRouter(controllerController)
 	server := newApp(engine, appConfig)
 	return server, nil
