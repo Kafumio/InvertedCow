@@ -32,17 +32,15 @@ type commentService struct {
 	redis *redis.Client
 	cd    dao.CommentDao
 	ud    dao.UserDao
-	pd    dao.PostDao
 }
 
-func NewCommentService(db *gorm.DB, cos *data.Cos, redis *redis.Client, cd dao.CommentDao, ud dao.UserDao, pd dao.PostDao) CommentService {
+func NewCommentService(db *gorm.DB, cos *data.Cos, redis *redis.Client, cd dao.CommentDao, ud dao.UserDao) CommentService {
 	return &commentService{
 		db:    db,
 		cos:   cos,
 		redis: redis,
 		cd:    cd,
 		ud:    ud,
-		pd:    pd,
 	}
 }
 
@@ -50,22 +48,12 @@ func (c *commentService) AddComment(comment *po.Comment) *e.Error {
 	if err := c.cd.AddComment(c.db, comment); err != nil {
 		return e.ErrAddCommentFailed
 	}
-	post, _ := c.pd.GetPostByID(c.db, comment.PostId)
-	post.CommentNum = post.CommentNum + 1
-	if err := c.pd.UpdatePost(c.db, post); err != nil {
-		return e.ErrMysql
-	}
 	return nil
 }
 
 func (c *commentService) DeleteComment(commentId, postId uint) *e.Error {
-	if err := c.cd.DeleteComment(c.db, commentId); err != nil {
+	if err := c.cd.DeleteComment(c.db, commentId, postId); err != nil {
 		return e.ErrDeleteCommentFailed
-	}
-	post, _ := c.pd.GetPostByID(c.db, postId)
-	post.CommentNum = post.CommentNum - 1
-	if err := c.pd.UpdatePost(c.db, post); err != nil {
-		return e.ErrMysql
 	}
 	return nil
 }

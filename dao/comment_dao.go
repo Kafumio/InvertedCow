@@ -9,7 +9,7 @@ type CommentDao interface {
 	// AddComment 添加评论
 	AddComment(db *gorm.DB, comment *po.Comment) error
 	// DeleteComment 删除评论(由于设置级联删除，子评论也会被一并删除)
-	DeleteComment(db *gorm.DB, commentId uint) error
+	DeleteComment(db *gorm.DB, commentId, postId uint) error
 	// LikeComment 点赞评论
 	LikeComment(db *gorm.DB, commentId uint) error
 	// DisLikeComment 取消点赞该评论
@@ -28,11 +28,28 @@ func NewCommentDao() CommentDao {
 }
 
 func (c *commentDao) AddComment(db *gorm.DB, comment *po.Comment) error {
-	return db.Create(comment).Error
+	// return db.Create(comment).Error
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(comment).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("UPDATE `post` SET comment_num = comment_num - 1 WHERE id = ?", comment.PostId).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
-func (c *commentDao) DeleteComment(db *gorm.DB, commentId uint) error {
-	return db.Delete(&po.Comment{}, commentId).Error
+func (c *commentDao) DeleteComment(db *gorm.DB, commentId, postId uint) error {
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("DELETE FROM `comment` WHERE id = ?", commentId).Error; err != nil {
+			return err
+		}
+		if err := tx.Exec("UPDATE `post` SET comment_num = comment_num - 1 WHERE id = ?", postId).Error; err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (c *commentDao) LikeComment(db *gorm.DB, commentId uint) error {
