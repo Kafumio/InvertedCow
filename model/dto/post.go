@@ -14,6 +14,12 @@ type PostDtoForView struct {
 	PublisherAvatar string `json:"publisherAvatar"`
 	// CommentNum 评论数
 	CommentNum int `json:"commentNum"`
+	// IsFollowed 是否已关注发布者
+	IsFollowed bool `json:"isFollowed"`
+	// LikedCount 点赞注数量
+	LikedCount int `json:"likeCount"`
+	// IsLiked 用户是否点赞
+	IsLiked bool `json:"isLiked"`
 }
 
 func NewPostDtoForView(post *po.Post) *PostDtoForView {
@@ -22,5 +28,6 @@ func NewPostDtoForView(post *po.Post) *PostDtoForView {
 		Text:       post.Text,
 		Publisher:  post.Publisher,
 		CommentNum: post.CommentNum,
+		LikedCount: post.LikedCount,
 	}
 }

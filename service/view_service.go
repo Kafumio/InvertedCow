@@ -18,7 +18,9 @@ type ViewService interface {
 	// PrePost 返回上一个视频 todo:是否由前端缓存实现？
 	PrePost(ctx *gin.Context) (uint, *e.Error)
 	// GetPostById 读取视频信息
-	GetPostById(postId uint) (*dto.PostDtoForView, *e.Error)
+	GetPostById(ctx *gin.Context, postId uint) (*dto.PostDtoForView, *e.Error)
+	// LikePost 给视频点赞
+	LikePost(ctx *gin.Context, postId uint) *e.Error
 }
 
 type viewService struct {
@@ -82,7 +84,8 @@ func (v *viewService) PrePost(ctx *gin.Context) (uint, *e.Error) {
 	return posts[0].ID, nil
 }
 
-func (v *viewService) GetPostById(postId uint) (*dto.PostDtoForView, *e.Error) {
+func (v *viewService) GetPostById(ctx *gin.Context, postId uint) (*dto.PostDtoForView, *e.Error) {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
 	post, err := v.postDao.GetPostByID(v.db, postId)
 	if err == gorm.ErrRecordNotFound {
 		return nil, e.ErrMysql
@@ -102,5 +105,40 @@ func (v *viewService) GetPostById(postId uint) (*dto.PostDtoForView, *e.Error) {
 	// 读取用户信息
 	user, err := v.userDao.GetUserByID(v.db, post.Publisher)
 	sourceDto.PublisherAvatar = user.Avatar
+	// 是否关注用户
+	isFollowed, err := v.userDao.CheckIsFollowed(v.db, post.Publisher, userInfo.ID)
+	if err != nil {
+		return nil, e.ErrMysql
+	}
+	sourceDto.IsFollowed = isFollowed
+	// 获取点赞信息
+	isLiked, err := v.postDao.CheckIsLikedUser(v.db, postId, userInfo.ID)
+	if err != nil {
+		return nil, e.ErrMysql
+	}
+	sourceDto.IsLiked = isLiked
 	return sourceDto, nil
+}
+
+func (v *viewService) LikePost(ctx *gin.Context, postId uint) *e.Error {
+	userInfo := ctx.Keys["user"].(*dto.UserInfo)
+	isLikedUser, err := v.postDao.CheckIsLikedUser(v.db, postId, userInfo.ID)
+	if err != nil {
+		return e.ErrMysql
+	}
+	if isLikedUser {
+		return nil
+	}
+	err = v.db.Transaction(func(tx *gorm.DB) error {
+		err2 := v.postDao.AddLikedUser(tx, userInfo.ID, postId)
+		if err2 != nil {
+			return err2
+		}
+		err2 = v.postDao.IncreaseLikedCount(tx, postId, 1)
+		return err2
+	})
+	if err != nil {
+		return e.ErrMysql
+	}
+	return nil
 }

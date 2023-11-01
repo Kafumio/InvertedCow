@@ -20,6 +20,8 @@ type Post struct {
 	Text       string `gorm:"column:text;comment:原始动态内容" json:"text"`        // 原始动态内容，后期可能做转义处理
 	Source     Source // 资源
 	CommentNum int    `gorm:"column:comment_num;comment:评论数" json:"commentNum"` // 评论数
+	LikedUsers []*User `gorm:"many2many:post_liked"`                          // 点赞的用户
+	LikedCount int     `gorm:"column:liked_count" json:"likeCount"`           // 点赞注数量
 	// TODO: tags, like, star, forward
 	// other list
 }

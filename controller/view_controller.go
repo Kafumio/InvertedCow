@@ -15,6 +15,8 @@ type ViewController interface {
 	PrePost(ctx *gin.Context)
 	// GetPostById 读取视频信息
 	GetPostById(ctx *gin.Context)
+	// LikePost 给动态点赞
+	LikePost(ctx *gin.Context)
 }
 
 type viewController struct {
@@ -56,10 +58,26 @@ func (v *viewController) GetPostById(ctx *gin.Context) {
 		result.Error(e.ErrBadRequest)
 		return
 	}
-	post, err2 := v.viewService.GetPostById(uint(postId))
+	post, err2 := v.viewService.GetPostById(ctx, uint(postId))
 	if err2 != nil {
 		result.Error(err2)
 		return
 	}
 	result.SuccessData(post)
+}
+
+func (v *viewController) LikePost(ctx *gin.Context) {
+	result := vo.NewResult(ctx)
+	postIdStr := ctx.Param("postId")
+	postId, err := strconv.Atoi(postIdStr)
+	if err != nil {
+		result.Error(e.ErrBadRequest)
+		return
+	}
+	err2 := v.viewService.LikePost(ctx, uint(postId))
+	if err2 != nil {
+		result.Error(err2)
+		return
+	}
+	result.SuccessMessage("请求成功")
 }
